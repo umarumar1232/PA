@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.custom-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.custom-table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+    padding: 16px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.custom-table tbody td {
+    padding: 14px 16px;
+    vertical-align: middle;
+}
+
+.custom-table tbody tr {
+    border-bottom: 1px solid #eee;
+}
+
+.custom-table tbody tr:hover {
+    background-color: #f9fafb;
+    transition: 0.2s;
+}
+
+.badge-status {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge-belum {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-sudah {
+    background-color: #28a745;
+    color: white;
+}
