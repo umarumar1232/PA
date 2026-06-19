@@ -176,21 +176,23 @@
       const drawerToggle = document.getElementById('drawerToggle');
       const drawer = document.getElementById('drawer');
       const mainContent = document.getElementById('mainContent');
+      mainContent.classList.add('expanded')
       
       // Auto-open drawer on larger screens
       if(window.innerWidth >= 992) {
         drawer.classList.add('open');
-        mainContent.classList.add('expanded');
+        mainContent.classList.remove('expanded');
       }
       
       drawerToggle.addEventListener('click', function() {
+
         if(window.innerWidth >= 992) {
           if(drawer.classList.contains('closed')) {
             drawer.classList.remove('closed');
-            mainContent.classList.add('expanded');
+            mainContent.classList.remove('expanded');
           } else {
             drawer.classList.add('closed');
-            mainContent.classList.remove('expanded');
+            mainContent.classList.add('expanded');
           }
         } else {
           drawer.classList.toggle('open');
