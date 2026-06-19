@@ -1,0 +1,379 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+  --gc-primary: #1a73e8;
+  --gc-hover: #f1f3f4;
+  --gc-bg: #ffffff;
+  --gc-text: #3c4043;
+  --gc-text-light: #5f6368;
+  --gc-border: #e0e0e0;
+}
+
+body {
+  font-family: 'Roboto', 'Google Sans', sans-serif;
+  background-color: var(--gc-bg);
+  color: var(--gc-text);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, .google-sans {
+  font-family: 'Google Sans', 'Roboto', sans-serif;
+  color: var(--gc-text);
+}
+
+/* ==========================================================================
+   Top App Bar
+   ========================================================================== */
+.gc-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--gc-border);
+  background-color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1040;
+}
+
+.gc-navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.gc-menu-btn {
+  background: none;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--gc-text-light);
+  transition: background-color 0.2s;
+  margin-right: 8px;
+}
+
+.gc-menu-btn:hover {
+  background-color: var(--gc-hover);
+}
+
+.gc-navbar-brand {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--gc-text-light);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+.gc-navbar-brand:hover {
+  color: var(--gc-text-light);
+  text-decoration: none;
+}
+
+.gc-navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.gc-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Side Drawer
+   ========================================================================== */
+.gc-drawer {
+  position: fixed;
+  top: 64px;
+  left: -300px; /* Hidden by default */
+  width: 300px;
+  height: calc(100vh - 64px);
+  background-color: white;
+  border-right: 1px solid var(--gc-border);
+  overflow-y: auto;
+  transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  z-index: 1030;
+}
+
+.gc-drawer.open {
+  left: 0;
+}
+
+.gc-main-content {
+  margin-top: 64px;
+  margin-left: 0;
+  padding: 24px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  min-height: calc(100vh - 64px);
+}
+
+@media (min-width: 992px) {
+  .gc-drawer {
+    left: 0; /* Open by default on desktop */
+  }
+  .gc-main-content {
+    margin-left: 300px; /* Push content on desktop */
+  }
+  .gc-drawer.closed {
+    left: -300px;
+  }
+  .gc-main-content.expanded {
+    margin-left: 0;
+  }
+}
+
+.gc-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 24px;
+  color: var(--gc-text);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 0 24px 24px 0;
+  margin-right: 8px;
+  transition: background-color 0.2s;
+}
+
+.gc-nav-item:hover {
+  background-color: var(--gc-hover);
+  color: var(--gc-text);
+  text-decoration: none;
+}
+
+.gc-nav-item.active {
+  background-color: #e8f0fe;
+  color: var(--gc-primary);
+}
+
+.gc-nav-item i {
+  width: 24px;
+  margin-right: 24px;
+  font-size: 20px;
+  color: var(--gc-text-light);
+}
+
+.gc-nav-item.active i {
+  color: var(--gc-primary);
+}
+
+.gc-nav-divider {
+  height: 1px;
+  background-color: var(--gc-border);
+  margin: 8px 0;
+}
+
+/* ==========================================================================
+   Course Cards Grid
+   ========================================================================== */
+.gc-course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.gc-course-card {
+  border: 1px solid var(--gc-border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  transition: box-shadow 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.gc-course-card:hover {
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+  text-decoration: none;
+  color: inherit;
+}
+
+.gc-card-header {
+  height: 100px;
+  background-color: var(--gc-primary);
+  color: white;
+  padding: 16px;
+  position: relative;
+}
+
+.gc-card-title {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gc-card-title:hover {
+  text-decoration: underline;
+}
+
+.gc-card-subtitle {
+  font-size: 13px;
+  margin-top: 4px;
+  opacity: 0.9;
+}
+
+.gc-card-avatar {
+  position: absolute;
+  right: 16px;
+  bottom: -32px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background-color: white;
+  object-fit: cover;
+}
+
+.gc-card-body {
+  padding: 16px;
+  flex-grow: 1;
+  min-height: 120px;
+}
+
+.gc-card-footer {
+  border-top: 1px solid var(--gc-border);
+  padding: 8px 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.gc-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--gc-text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.gc-icon-btn:hover {
+  background-color: var(--gc-hover);
+}
+
+/* ==========================================================================
+   Material Tabs
+   ========================================================================== */
+.gc-tabs {
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid var(--gc-border);
+  margin-bottom: 24px;
+}
+
+.gc-tab {
+  padding: 16px 24px;
+  font-weight: 500;
+  color: var(--gc-text-light);
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-bottom-color 0.2s;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gc-tab:hover {
+  color: var(--gc-text);
+  background-color: var(--gc-hover);
+  text-decoration: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.gc-tab.active {
+  color: var(--gc-primary);
+  border-bottom-color: var(--gc-primary);
+}
+
+/* ==========================================================================
+   Cards & Tables
+   ========================================================================== */
+.gc-card {
+  background: white;
+  border: 1px solid var(--gc-border);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1);
+  margin-bottom: 24px;
+}
+
+.gc-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gc-table th {
+  text-align: left;
+  padding: 12px 16px;
+  color: var(--gc-text-light);
+  font-weight: 500;
+  font-size: 14px;
+  border-bottom: 1px solid var(--gc-border);
+}
+
+.gc-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gc-border);
+  color: var(--gc-text);
+  font-size: 14px;
+}
+
+.gc-table tr:hover {
+  background-color: var(--gc-hover);
+}
+
+/* Form inputs styling */
+.form-control {
+  border-radius: 4px;
+  border: 1px solid var(--gc-border);
+}
+.form-control:focus {
+  border-color: var(--gc-primary);
+  box-shadow: inset 0 0 0 1px var(--gc-primary);
+}
+
+/* Fab Button */
+.gc-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--gc-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  font-size: 24px;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  z-index: 1000;
+}
+.gc-fab:hover {
+  box-shadow: 0 6px 10px rgba(0,0,0,0.3);
+  color: white;
+  text-decoration: none;
+}

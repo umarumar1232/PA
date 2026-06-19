@@ -8,9 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\TugasMahasiswaController;
 use App\Http\Controllers\Admin\NilaiTugasController;
-use App\Models\Assignment;
-use App\Models\Material;
-use App\Models\Submission;
+use App\Http\Controllers\Mahasiswa\MataKuliahController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,25 +27,10 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/mahasiswa/home', function () {
-
-    $user = auth()->user();
-
-    $assignments = Assignment::all();
-
-    $submissions = Submission::where('user_id', $user->id)
-                    ->get()
-                    ->keyBy('assignment_id');
-
-    $materials = Material::all();
-
-    return view('mahasiswa.home.index', compact(
-        'assignments',
-        'submissions',
-        'materials'
-    ));
-
-})->name('mahasiswa.home');;
+Route::middleware('auth')->group(function () {
+    Route::get('/mahasiswa/home', [MataKuliahController::class, 'index'])->name('mahasiswa.home');
+    Route::get('/mahasiswa/kelas/{id}', [MataKuliahController::class, 'show'])->name('mahasiswa.kelas.show');
+});
 
 /*
 |--------------------------------------------------------------------------

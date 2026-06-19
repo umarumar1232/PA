@@ -1,35 +1,39 @@
-@extends('layouts.app_admin')
+@extends('layouts.classroom')
+
+@section('title', 'Rekap Nilai')
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="font-weight-normal text-muted mb-0">Rekap Nilai Mahasiswa</h4>
+    </div>
 
-    <h4 class="mb-3">Rekap Nilai Mahasiswa</h4>
-
-    <div class="card">
-        <div class="card-body">
-
-            <div class="table-responsive">
-                <table class="table custom-table table-bordered table-striped text-center align-middle table-hover ">
+    <div class="gc-card p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="gc-table">
                 <thead class="text-center align-middle">
                     <tr>
-                        <th style="min-width:150px;">Nama</th>
-                        <th style="min-width:100px;">NIM</th>
-
+                        <th class="text-left" style="min-width:200px;">Mahasiswa</th>
+                        <th style="min-width:120px;">NIM</th>
                         @foreach($assignments as $tugas)
-                            <th>{{ $tugas->title }}</th>
+                            <th title="{{ $tugas->title }}" style="white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">
+                                {{ Str::limit($tugas->title, 15) }}
+                            </th>
                         @endforeach
-                        <th style="min-width:100px;">Rata-rata</th>
-
+                        <th style="min-width:100px;" class="text-primary">Rata-rata</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    @foreach($mahasiswa as $mhs)
+                    @forelse($mahasiswa as $mhs)
                     <tr>
-                        <td class="text-start" style="white-space: nowrap;">
-                            {{ $mhs->nama }}
+                        <td class="text-left" style="white-space: nowrap;">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ $mhs->foto ?? 'https://ui-avatars.com/api/?name='.urlencode($mhs->nama).'&color=1a73e8&background=e8f0fe' }}" alt="User" class="gc-avatar mr-3" style="width: 28px; height: 28px;">
+                                <strong class="text-dark">{{ $mhs->nama }}</strong>
+                            </div>
                         </td>
-                        <td>{{ $mhs->mahasiswa->nim ?? '-' }}</td>
+                        <td class="text-center text-muted">{{ $mhs->mahasiswa->nim ?? '-' }}</td>
 
                         @php
                             $total = 0;
@@ -51,24 +55,30 @@
                                 }
                             @endphp
 
-                            <td>{{ $nilai ?? '-' }}</td>
+                            <td class="text-center">
+                                @if($nilai !== null)
+                                    <span class="font-weight-medium">{{ $nilai }}</span>
+                                @else
+                                    <span class="text-muted small">-</span>
+                                @endif
+                            </td>
 
                         @endforeach
 
                         {{-- KOLOM RATA-RATA --}}
-                        <td>
+                        <td class="text-center font-weight-bold text-primary">
                             {{ $count > 0 ? round($total / $count, 1) : '-' }}
                         </td>
 
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="{{ count($assignments) + 3 }}" class="text-center py-4 text-muted">Belum ada data mahasiswa atau tugas.</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-            
-
-        </div>
     </div>
-
 </div>
 @endsection

@@ -1,126 +1,69 @@
-@extends('layouts/app_admin')
+@extends('layouts.classroom')
 
-@section('title', $title ?? "")
-@section('halaman', $halaman ?? "")
+@section('title', 'Admin Dashboard')
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid py-4">
+    <h4 class="mb-4 font-weight-normal text-muted">Statistik E-Learning</h4>
 
-    {{-- STATISTIC CARDS --}}
-    <div class="row">
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3>{{ $jumlah_guru }}</h3>
-                    <p>Jumlah Dosen</p>
+    <div class="gc-course-grid">
+        <!-- Card 1 -->
+        <div class="gc-course-card">
+            <div class="gc-card-header" style="background-color: #1a73e8;">
+                <h2 class="gc-card-title">Total Pengguna</h2>
+                <div class="gc-card-subtitle">Semua Role</div>
+                <div class="gc-card-avatar d-flex align-items-center justify-content-center bg-light text-primary" style="font-size: 24px;">
+                    {{ $jumlah_user }}
                 </div>
-                <div class="icon">
-                    <i class="ion ion-bag"></i>
-                </div>
+            </div>
+            <div class="gc-card-body d-flex flex-column justify-content-center">
+                <p class="text-muted mb-1"><i class="fas fa-user-graduate mr-2"></i> Mahasiswa: <strong>{{ $jumlah_siswa }}</strong></p>
+                <p class="text-muted mb-0"><i class="fas fa-chalkboard-teacher mr-2"></i> Dosen/Admin: <strong>{{ $jumlah_guru }}</strong></p>
+            </div>
+            <div class="gc-card-footer">
+                <a href="{{ route('admin.users.index') }}" class="gc-icon-btn" title="Kelola Pengguna">
+                    <i class="fas fa-users"></i>
+                </a>
             </div>
         </div>
 
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-success">
-                <div class="inner">
-                    <h3>{{ $jumlah_siswa }}</h3>
-                    <p>Jumlah Mahasiswa</p>
+        <!-- Card 2 -->
+        <div class="gc-course-card">
+            <div class="gc-card-header" style="background-color: #1e8e3e;">
+                <h2 class="gc-card-title">Materi & Kelas</h2>
+                <div class="gc-card-subtitle">Total Pembelajaran</div>
+                <div class="gc-card-avatar d-flex align-items-center justify-content-center bg-light text-success" style="font-size: 24px;">
+                    {{ $jumlah_kelas }}
                 </div>
-                <div class="icon">
-                    <i class="ion ion-stats-bars"></i>
-                </div>
+            </div>
+            <div class="gc-card-body d-flex flex-column justify-content-center">
+                <p class="text-muted mb-0">Total materi yang tersedia di seluruh kelas aktif.</p>
+            </div>
+            <div class="gc-card-footer">
+                <a href="{{ route('admin.materials.index') }}" class="gc-icon-btn" title="Kelola Materi">
+                    <i class="fas fa-book"></i>
+                </a>
             </div>
         </div>
 
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3>{{ $jumlah_kelas }}</h3>
-                    <p>Jumlah Materi</p>
-                </div>
-                <div class="icon">
-                    <i class="ion ion-person-add"></i>
+        <!-- Card 3 -->
+        <div class="gc-course-card">
+            <div class="gc-card-header" style="background-color: #fbbc04; color: #3c4043;">
+                <h2 class="gc-card-title">Tugas & Assignment</h2>
+                <div class="gc-card-subtitle">Menunggu Penilaian</div>
+                <div class="gc-card-avatar d-flex align-items-center justify-content-center bg-light text-warning" style="font-size: 24px;">
+                    {{ $jumlah_mapel ?? 0 }}
                 </div>
             </div>
-        </div>
-
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-danger">
-                <div class="inner">
-                    <h3>{{ $jumlah_user }}</h3>
-                    <p>Jumlah User</p>
-                </div>
-                <div class="icon">
-                    <i class="ion ion-pie-graph"></i>
-                </div>
+            <div class="gc-card-body d-flex flex-column justify-content-center">
+                <p class="text-muted mb-0">Total tugas yang diberikan kepada mahasiswa.</p>
+            </div>
+            <div class="gc-card-footer">
+                <a href="{{ route('admin.assignments.index') }}" class="gc-icon-btn" title="Kelola Tugas">
+                    <i class="fas fa-tasks"></i>
+                </a>
             </div>
         </div>
     </div>
-
-    {{-- CHART SECTION --}}
-    <div class="col-lg-6">
-      <div class="card shadow-sm">
-        <div class="card-header text-center font-weight-bold">
-            Distribusi Pengguna - Deep Learning
-        </div>
-        <div class="card-body d-flex justify-content-center align-items-center">
-            <div style="width: 250px; height: 250px;">
-                <canvas id="roleChart"></canvas>
-            </div>
-        </div>
-      </div>
-    </div>
-
-        <!-- {{-- Future Expansion Column --}}
-        <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header text-center font-weight-bold">
-                    Ringkasan Sistem
-                </div>
-                <div class="card-body">
-                    <p>Total Pengguna: <strong>{{ $jumlah_user }}</strong></p>
-                    <p>Total Kelas: <strong>{{ $jumlah_kelas }}</strong></p>
-                    <p>Total Assignment: <strong>{{ $jumlah_mapel ?? 0 }}</strong></p>
-                    <hr>
-                    <p class="text-muted mb-0">
-                        Sistem e-learning mata kuliah Deep Learning berjalan normal.
-                    </p>
-                </div>
-            </div>
-        </div> -->
-    </div>
-
 </div>
 @endsection
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const ctx = document.getElementById('roleChart');
-
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Dosen', 'Mahasiswa'],
-                datasets: [{
-                    data: [{{ $jumlah_guru }}, {{ $jumlah_siswa }}],
-                    backgroundColor: ['#17a2b8', '#28a745'],
-                }]
-            },
-            options: {
-                responsive: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-    }
-
-});
-</script>
-@endpush
