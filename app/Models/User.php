@@ -71,4 +71,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Pengajar::class, 'user_id', 'user_id');
     }
+
+    // Relasi ke Kelas (Many-to-Many via kelas_mahasiswa)
+    public function enrolledClasses()
+    {
+        return $this->belongsToMany(MataKuliah::class, 'kelas_mahasiswa', 'user_id', 'mata_kuliah_id', 'user_id', 'id');
+    }
 }

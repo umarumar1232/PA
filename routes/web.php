@@ -30,6 +30,7 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/home', [MataKuliahController::class, 'index'])->name('mahasiswa.home');
     Route::get('/mahasiswa/kelas/{id}', [MataKuliahController::class, 'show'])->name('mahasiswa.kelas.show');
+    Route::post('/mahasiswa/kelas/join', [MataKuliahController::class, 'join'])->name('mahasiswa.kelas.join');
 });
 
 /*
@@ -45,6 +46,15 @@ Route::middleware(['auth', 'admin'])
 
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->name('dashboard');
+
+        Route::post('/kelas', [DashboardController::class, 'storeKelas'])
+            ->name('kelas.store');
+
+        Route::delete('/kelas/{id}', [DashboardController::class, 'destroyKelas'])
+            ->name('kelas.destroy');
+
+        Route::post('/kelas/{id}/tugas', [DashboardController::class, 'storeTugas'])
+            ->name('kelas.tugas.store');
 
         Route::get('/admin/mahasiswa', [UserController::class, 'mahasiswa'])
             ->name('mahasiswa.index');

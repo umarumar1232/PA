@@ -4,66 +4,87 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    <h4 class="mb-4 font-weight-normal text-muted">Statistik E-Learning</h4>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="font-weight-normal text-muted mb-0">Daftar Kelas</h4>
+        <button class="btn btn-primary d-flex align-items-center shadow-sm" data-toggle="modal" data-target="#createClassModal" style="border-radius: 20px; padding: 8px 16px; font-weight: 500; font-size: 14px; background-color: #1a73e8; border: none;">
+            <i class="fas fa-plus mr-2"></i> Buat Kelas
+        </button>
+    </div>
 
     <div class="gc-course-grid">
-        <!-- Card 1 -->
-        <div class="gc-course-card">
-            <div class="gc-card-header" style="background-color: #1a73e8;">
-                <h2 class="gc-card-title">Total Pengguna</h2>
-                <div class="gc-card-subtitle">Semua Role</div>
-                <div class="gc-card-avatar d-flex align-items-center justify-content-center bg-light text-primary" style="font-size: 24px;">
-                    {{ $jumlah_user }}
-                </div>
-            </div>
-            <div class="gc-card-body d-flex flex-column justify-content-center">
-                <p class="text-muted mb-1"><i class="fas fa-user-graduate mr-2"></i> Mahasiswa: <strong>{{ $jumlah_siswa }}</strong></p>
-                <p class="text-muted mb-0"><i class="fas fa-chalkboard-teacher mr-2"></i> Dosen/Admin: <strong>{{ $jumlah_guru }}</strong></p>
-            </div>
-            <div class="gc-card-footer">
-                <a href="{{ route('admin.users.index') }}" class="gc-icon-btn" title="Kelola Pengguna">
-                    <i class="fas fa-users"></i>
+        @forelse($mataKuliahs as $index => $mk)
+            @php
+                $colors = [
+                    ['bg' => '#1a73e8', 'text' => '#fff'],
+                    ['bg' => '#1e8e3e', 'text' => '#fff'],
+                    ['bg' => '#e37400', 'text' => '#fff'],
+                    ['bg' => '#a142f4', 'text' => '#fff'],
+                    ['bg' => '#ea4335', 'text' => '#fff'],
+                    ['bg' => '#137333', 'text' => '#fff'],
+                    ['bg' => '#c5221f', 'text' => '#fff'],
+                    ['bg' => '#185abc', 'text' => '#fff'],
+                ];
+                $c = $colors[$index % count($colors)];
+                $inisial = strtoupper(substr($mk->nama_mk, 0, 2));
+            @endphp
+            <div class="gc-course-card-wrapper" style="position: relative;">
+                <a href="{{ route('mahasiswa.kelas.show', $mk->id) }}" class="gc-course-card" style="text-decoration:none; color:inherit; height: 100%;">
+                    <div class="gc-card-header" style="background-color: {{ $c['bg'] }}; color: {{ $c['text'] }}; position: relative; height: 110px; padding: 16px;">
+                        <div style="font-family: 'Google Sans', sans-serif; font-size: 20px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;">
+                            {{ $mk->nama_mk }}
+                        </div>
+                        <div style="font-size: 13px; opacity: 0.9; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ $mk->bagian ?? 'Tanpa bagian' }}
+                        </div>
+                        <div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">
+                            {{ $mk->kode_mk }} &bull; Semester {{ $mk->semester }}
+                        </div>
+                        <!-- Avatar inisial -->
+                        <div style="position: absolute; right: 16px; bottom: -28px; width: 56px; height: 56px; border-radius: 50%; background: white; color: {{ $c['bg'] }}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 1;">
+                            {{ $inisial }}
+                        </div>
+                    </div>
+                    <div class="gc-card-body" style="padding: 36px 16px 12px 16px; min-height: 120px;">
+                        <div class="mb-2" style="font-size: 13px; color: #5f6368;">
+                            @if($mk->tingkat)
+                                <div class="mb-1"><i class="fas fa-layer-group mr-2" style="width: 16px;"></i>Tingkat: <strong>{{ $mk->tingkat }}</strong></div>
+                            @endif
+                            @if($mk->mata_pelajaran)
+                                <div class="mb-1"><i class="fas fa-book mr-2" style="width: 16px;"></i>Mapel: <strong>{{ $mk->mata_pelajaran }}</strong></div>
+                            @endif
+                            @if($mk->ruang)
+                                <div class="mb-1"><i class="fas fa-door-open mr-2" style="width: 16px;"></i>Ruang: <strong>{{ $mk->ruang }}</strong></div>
+                            @endif
+                        </div>
+                        <p class="text-muted small mb-0 mt-2">
+                            <i class="fas fa-folder-open mr-1"></i> {{ $mk->materials_count }} pertemuan tersedia
+                        </p>
+                    </div>
+                    <div class="gc-card-footer" style="border-top: 1px solid #e0e0e0; padding: 6px 16px; display: flex; justify-content: space-between; align-items: center; background-color: #f8f9fa;">
+                        <div>
+                            @if(Auth::user()->role === 'admin')
+                                <form action="{{ route('admin.kelas.destroy', $mk->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kelas ini beserta seluruh materi dan tugas di dalamnya?');" style="display: inline;" onclick="event.stopPropagation();">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-link text-danger p-0" title="Hapus Kelas" style="font-size: 14px; text-decoration: none;">
+                                        <i class="fas fa-trash-alt mr-1"></i> Hapus
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" style="border-radius: 16px; font-size: 12px; font-weight: 500; padding: 4px 12px;" onclick="event.preventDefault(); window.location='{{ route('mahasiswa.kelas.show', $mk->id) }}'">
+                            Buka
+                        </button>
+                    </div>
                 </a>
             </div>
-        </div>
-
-        <!-- Card 2 -->
-        <div class="gc-course-card">
-            <div class="gc-card-header" style="background-color: #1e8e3e;">
-                <h2 class="gc-card-title">Materi & Kelas</h2>
-                <div class="gc-card-subtitle">Total Pembelajaran</div>
-                <div class="gc-card-avatar d-flex align-items-center justify-content-center bg-light text-success" style="font-size: 24px;">
-                    {{ $jumlah_kelas }}
-                </div>
+        @empty
+            <div class="col-12 text-center py-5 text-muted">
+                <i class="fas fa-chalkboard fa-4x mb-3 d-block text-light"></i>
+                <h5 class="font-weight-normal">Belum ada kelas yang dibuat</h5>
+                <p class="small">Klik tombol "+" di kanan atas atau tombol "Buat Kelas" untuk menambahkan kelas baru.</p>
             </div>
-            <div class="gc-card-body d-flex flex-column justify-content-center">
-                <p class="text-muted mb-0">Total materi yang tersedia di seluruh kelas aktif.</p>
-            </div>
-            <div class="gc-card-footer">
-                <a href="{{ route('admin.materials.index') }}" class="gc-icon-btn" title="Kelola Materi">
-                    <i class="fas fa-book"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Card 3 -->
-        <div class="gc-course-card">
-            <div class="gc-card-header" style="background-color: #fbbc04; color: #3c4043;">
-                <h2 class="gc-card-title">Tugas & Assignment</h2>
-                <div class="gc-card-subtitle">Menunggu Penilaian</div>
-                <div class="gc-card-avatar d-flex align-items-center justify-content-center bg-light text-warning" style="font-size: 24px;">
-                    {{ $jumlah_mapel ?? 0 }}
-                </div>
-            </div>
-            <div class="gc-card-body d-flex flex-column justify-content-center">
-                <p class="text-muted mb-0">Total tugas yang diberikan kepada mahasiswa.</p>
-            </div>
-            <div class="gc-card-footer">
-                <a href="{{ route('admin.assignments.index') }}" class="gc-icon-btn" title="Kelola Tugas">
-                    <i class="fas fa-tasks"></i>
-                </a>
-            </div>
-        </div>
+        @endforelse
     </div>
 </div>
 @endsection

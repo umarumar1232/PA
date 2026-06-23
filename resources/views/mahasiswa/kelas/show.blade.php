@@ -60,6 +60,41 @@
             <div class="row">
                 {{-- Kolom Kiri: Mendatang --}}
                 <div class="col-md-3 mb-4">
+                    {{-- Kode Kelas Card --}}
+                    <div class="gc-card p-3 mb-3 d-flex flex-column justify-content-center" style="border-radius: 8px;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span style="font-size: 13px; font-weight: 500; color: #3c4043;">Kode kelas</span>
+                            <button class="btn btn-link text-muted p-0" title="Salin Kode" onclick="navigator.clipboard.writeText('{{ $mataKuliah->kode_mk }}'); alert('Kode kelas berhasil disalin: {{ $mataKuliah->kode_mk }}');" style="text-decoration: none;">
+                                <i class="far fa-copy" style="font-size: 14px;"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span style="font-family: 'Google Sans', sans-serif; font-size: 22px; font-weight: 700; color: #1a73e8; letter-spacing: 0.5px;">
+                                {{ $mataKuliah->kode_mk }}
+                            </span>
+                            <button class="btn btn-link text-muted p-0" title="Tampilkan Layar Penuh" onclick="showLargeCode('{{ $mataKuliah->kode_mk }}')" style="text-decoration: none;">
+                                <i class="fas fa-expand" style="font-size: 14px;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Large Code Overlay Modal -->
+                    <div id="largeCodeOverlay" onclick="hideLargeCode()" style="display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 9999; align-items: center; justify-content: center; flex-direction: column; cursor: pointer;">
+                        <div style="font-size: 24px; color: #5f6368; margin-bottom: 24px; font-family: 'Google Sans', sans-serif;">Kode kelas</div>
+                        <div id="largeCodeText" style="font-size: 160px; font-weight: 700; color: #1a73e8; font-family: 'Google Sans', sans-serif; letter-spacing: 4px;"></div>
+                        <div style="font-size: 18px; color: #5f6368; margin-top: 40px;"><i class="fas fa-times mr-2"></i> Klik di mana saja untuk menutup</div>
+                    </div>
+
+                    <script>
+                    function showLargeCode(code) {
+                        document.getElementById('largeCodeText').innerText = code;
+                        document.getElementById('largeCodeOverlay').style.display = 'flex';
+                    }
+                    function hideLargeCode() {
+                        document.getElementById('largeCodeOverlay').style.display = 'none';
+                    }
+                    </script>
+
                     <div class="gc-card p-3">
                         <h6 class="font-weight-bold text-dark mb-3">Mendatang</h6>
                         @php
@@ -150,6 +185,20 @@
 
         {{-- ---- TAB: TUGAS KELAS ---- --}}
         <div id="content-tugaskelas" class="tab-content-panel" style="display:none;">
+            @if(Auth::user()->role === 'admin')
+            <div class="mb-4 text-left">
+                @if($mataKuliah->materials->isEmpty())
+                    <button class="btn btn-primary d-flex align-items-center shadow-sm" style="border-radius: 24px; padding: 10px 24px; font-weight: 500; font-size: 14px; background-color: #1a73e8; border: none; opacity: 0.65; cursor: not-allowed;" title="Harap buat materi/pertemuan terlebih dahulu" disabled>
+                        <i class="fas fa-plus mr-2" style="font-size: 16px;"></i> Buat Tugas
+                    </button>
+                    <small class="text-danger d-block mt-2"><i class="fas fa-exclamation-circle mr-1"></i> Hubungkan dengan pertemuan/materi terlebih dahulu. Harap tambahkan materi di menu utama.</small>
+                @else
+                    <button class="btn btn-primary d-flex align-items-center shadow-sm" data-toggle="modal" data-target="#createAssignmentModal" style="border-radius: 24px; padding: 10px 24px; font-weight: 500; font-size: 14px; background-color: #1a73e8; border: none; transition: background-color 0.2s;">
+                        <i class="fas fa-plus mr-2" style="font-size: 16px;"></i> Buat Tugas
+                    </button>
+                @endif
+            </div>
+            @endif
             @forelse($mataKuliah->materials as $material)
                 <div class="mb-4">
                     {{-- Header Pertemuan --}}
@@ -251,6 +300,66 @@
     border-bottom-color: #1a73e8;
 }
 </style>
+
+@if(Auth::user()->role === 'admin' && !$mataKuliah->materials->isEmpty())
+<!-- Create Assignment Modal -->
+<div class="modal fade" id="createAssignmentModal" tabindex="-1" aria-labelledby="createAssignmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
+    <div class="modal-content gc-modal-content">
+      <form action="{{ route('admin.kelas.tugas.store', $mataKuliah->id) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="modal-header gc-modal-header">
+          <h5 class="modal-title gc-modal-title" id="createAssignmentModalLabel">Buat Tugas Baru</h5>
+        </div>
+        <div class="modal-body gc-modal-body text-left">
+          
+          <div class="form-group mb-4">
+              <label class="text-muted small font-weight-bold mb-1">Pilih Pertemuan / Materi*</label>
+              <select name="material_id" class="form-control" required style="height: 48px; border-radius: 8px;">
+                  @foreach($mataKuliah->materials as $mat)
+                      <option value="{{ $mat->id }}">{{ $mat->title }} ({{ $mat->category->name ?? 'Materi' }})</option>
+                  @endforeach
+              </select>
+          </div>
+
+          <div class="gc-md-input-group mb-4">
+            <input type="text" name="title" id="tugas_title_input" placeholder=" " required autocomplete="off">
+            <label>Judul Tugas*</label>
+          </div>
+
+          <div class="form-group mb-4">
+              <label class="text-muted small font-weight-bold mb-1">Petunjuk / Deskripsi</label>
+              <textarea name="description" class="form-control" placeholder="Tulis instruksi pengerjaan tugas di sini..." rows="4" style="border-radius: 8px; padding: 12px;"></textarea>
+          </div>
+
+          <div class="form-group mb-4">
+              <label class="text-muted small font-weight-bold mb-1">Tenggat Waktu (Deadline)</label>
+              <input type="datetime-local" name="deadline" class="form-control" style="height: 48px; border-radius: 8px;">
+          </div>
+
+          <div class="gc-md-input-group mb-4">
+            <input type="url" name="notebook_url" placeholder=" " autocomplete="off">
+            <label>URL Notebook Google Colab (Opsional)</label>
+          </div>
+
+          <div class="form-group mb-4">
+              <label class="text-muted small font-weight-bold mb-1">Lampiran File Tugas (Opsional)</label>
+              <div class="custom-file">
+                  <input type="file" name="file" class="custom-file-input" id="assignmentFileInput" onchange="$(this).next('.custom-file-label').html(this.files[0].name)">
+                  <label class="custom-file-label" for="assignmentFileInput" style="border-radius: 8px; line-height: 2.2;">Pilih File...</label>
+              </div>
+          </div>
+
+        </div>
+        <div class="modal-footer gc-modal-footer">
+          <button type="button" class="gc-modal-btn gc-modal-btn-cancel" data-dismiss="modal">Batal</button>
+          <button type="submit" class="gc-modal-btn gc-modal-btn-submit active" id="create_tugas_submit_btn">Buat</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+@endif
 
 @push('scripts')
 <script>

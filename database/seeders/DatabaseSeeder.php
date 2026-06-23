@@ -78,6 +78,13 @@ class DatabaseSeeder extends Seeder
                 ['user_id' => $user->user_id],
                 ['nim' => 'NIM00'.$i]
             );
+
+            \Illuminate\Support\Facades\DB::table('kelas_mahasiswa')->insertOrIgnore([
+                'user_id' => $user->user_id,
+                'mata_kuliah_id' => $mkId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
         }
     }
 }

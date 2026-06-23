@@ -12,6 +12,10 @@ class MataKuliah extends Model
         'kode_mk',
         'nama_mk',
         'semester',
+        'bagian',
+        'tingkat',
+        'mata_pelajaran',
+        'ruang',
     ];
 
     /**
@@ -31,5 +35,13 @@ class MataKuliah extends Model
             'material_id',
             $this->materials()->pluck('id')
         );
+    }
+
+    /**
+     * Semua mahasiswa yang terdaftar di kelas ini
+     */
+    public function enrolledStudents()
+    {
+        return $this->belongsToMany(User::class, 'kelas_mahasiswa', 'mata_kuliah_id', 'user_id', 'id', 'user_id');
     }
 }
