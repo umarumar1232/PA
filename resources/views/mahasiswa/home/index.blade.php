@@ -4,6 +4,39 @@
 
 @section('content')
 <div class="container-fluid py-4">
+    {{-- Undangan Kelas --}}
+    @if(isset($pendingInvitations) && !$pendingInvitations->isEmpty())
+        <div class="mb-5">
+            <h5 class="text-primary font-weight-bold mb-3"><i class="fas fa-envelope-open-text mr-2"></i>Undangan Kelas</h5>
+            <div class="row">
+                @foreach($pendingInvitations as $inv)
+                    <div class="col-md-4 mb-3">
+                        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden; border-left: 5px solid #1a73e8;">
+                            <div class="card-body p-3">
+                                <h6 class="font-weight-bold text-dark mb-1">{{ $inv->nama_mk }}</h6>
+                                <p class="text-muted small mb-2">
+                                    <strong>Kelas:</strong> {{ $inv->bagian ?? 'Tanpa kelas' }}<br>
+                                    <strong>Jadwal:</strong> {{ $inv->jadwal ?? 'Tanpa jadwal' }}<br>
+                                    <strong>Subject:</strong> {{ $inv->mata_pelajaran ?? 'Tanpa subject' }}
+                                </p>
+                                <div class="d-flex justify-content-end" style="gap: 8px;">
+                                    <form action="{{ route('mahasiswa.kelas.invitation.decline', $inv->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 20px; font-weight: 500; font-size: 12px;">Tolak</button>
+                                    </form>
+                                    <form action="{{ route('mahasiswa.kelas.invitation.accept', $inv->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-primary" style="border-radius: 20px; font-weight: 500; font-size: 12px; background-color: #1a73e8; border: none;">Terima</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <h4 class="mb-4 font-weight-normal text-muted">Mata Kuliah yang Diikuti</h4>
 
     <div class="gc-course-grid">

@@ -19,7 +19,17 @@ class DashboardController extends Controller
         $jumlah_mapel = Assignment::count();
         $jumlah_user = User::count();
 
-        $mataKuliahs = MataKuliah::withCount('materials')->get();
+        // Mengambil kelas yang diajar oleh user yang sedang login (status accepted)
+        $mataKuliahs = MataKuliah::whereHas('teachers', function($q) {
+            $q->where('users.user_id', auth()->user()->user_id)
+              ->where('status', 'accepted');
+        })->withCount('materials')->get();
+
+        // Mengambil undangan mengajar yang pending
+        $pendingInvitations = MataKuliah::whereHas('teachers', function($q) {
+            $q->where('users.user_id', auth()->user()->user_id)
+              ->where('status', 'pending');
+        })->get();
 
         return view('admin.home.index', compact(
             'jumlah_siswa',
@@ -27,7 +37,8 @@ class DashboardController extends Controller
             'jumlah_kelas',
             'jumlah_mapel',
             'jumlah_user',
-            'mataKuliahs'
+            'mataKuliahs',
+            'pendingInvitations'
         ));
     }
 
@@ -36,7 +47,7 @@ class DashboardController extends Controller
         $request->validate([
             'nama_kelas' => 'required|string|max:255',
             'bagian' => 'nullable|string|max:255',
-            'tingkat' => 'nullable|string|max:255',
+            'jadwal' => 'nullable|string|max:255',
             'mata_pelajaran' => 'nullable|string|max:255',
             'ruang' => 'nullable|string|max:255',
         ]);
@@ -45,22 +56,20 @@ class DashboardController extends Controller
             $kode_mk = strtolower(\Illuminate\Support\Str::random(7));
         } while (MataKuliah::where('kode_mk', $kode_mk)->exists());
 
-        $tingkatInput = $request->input('tingkat');
-        $semester = 1;
-        if ($tingkatInput) {
-            if (preg_match('/\d+/', $tingkatInput, $matches)) {
-                $semester = (int)$matches[0];
-            }
-        }
-
-        MataKuliah::create([
+        $kelas = MataKuliah::create([
             'kode_mk' => $kode_mk,
             'nama_mk' => $request->nama_kelas,
-            'semester' => $semester,
+            'semester' => 1,
             'bagian' => $request->bagian,
-            'tingkat' => $request->tingkat,
+            'jadwal' => $request->jadwal,
             'mata_pelajaran' => $request->mata_pelajaran,
             'ruang' => $request->ruang,
+        ]);
+
+        // Secara otomatis jadikan pembuat kelas sebagai owner (accepted)
+        $kelas->teachers()->attach(auth()->user()->user_id, [
+            'role' => 'owner',
+            'status' => 'accepted'
         ]);
 
         return redirect()->back()->with('success', 'Kelas berhasil dibuat');
@@ -93,5 +102,165 @@ class DashboardController extends Controller
         Assignment::create($data);
 
         return redirect()->back()->with('success', 'Tugas berhasil ditambahkan ke kelas ini');
+    }
+
+    public function updateKelas(Request $request, $id)
+    {
+        $kelas = MataKuliah::findOrFail($id);
+
+        $request->validate([
+            'nama_kelas' => 'required|string|max:255',
+            'bagian' => 'nullable|string|max:255',
+            'jadwal' => 'nullable|string|max:255',
+            'mata_pelajaran' => 'nullable|string|max:255',
+            'ruang' => 'nullable|string|max:255',
+        ]);
+
+        $kelas->update([
+            'nama_mk' => $request->nama_kelas,
+            'bagian' => $request->bagian,
+            'jadwal' => $request->jadwal,
+            'mata_pelajaran' => $request->mata_pelajaran,
+            'ruang' => $request->ruang,
+        ]);
+
+        return redirect()->back()->with('success', 'Detail kelas berhasil diperbarui');
+    }
+
+    public function storeMateri(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'required|exists:categories,id',
+            'file' => 'nullable|file',
+            'video_url' => 'nullable|url',
+        ]);
+
+        $filePath = null;
+        if ($request->hasFile('file')) {
+            $filePath = $request->file('file')->store('materials/files', 'public');
+        }
+
+        Material::create([
+            'matakuliah_id' => $id,
+            'title' => $request->title,
+            'description' => $request->description,
+            'category_id' => $request->category_id,
+            'file' => $filePath,
+            'video_url' => $request->video_url,
+        ]);
+
+        return redirect()->back()->with('success', 'Materi berhasil ditambahkan');
+    }
+
+    public function acceptTeacherInvitation($id)
+    {
+        $kelas = MataKuliah::findOrFail($id);
+        $kelas->teachers()->updateExistingPivot(auth()->user()->user_id, [
+            'status' => 'accepted'
+        ]);
+
+        return redirect()->back()->with('success', 'Berhasil menerima undangan mengajar di kelas ' . $kelas->nama_mk);
+    }
+
+    public function declineTeacherInvitation($id)
+    {
+        $kelas = MataKuliah::findOrFail($id);
+        $kelas->teachers()->detach(auth()->user()->user_id);
+
+        return redirect()->back()->with('success', 'Berhasil menolak undangan mengajar');
+    }
+
+    public function inviteTeacher(Request $request, $id)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $request->email)
+                    ->whereIn('role', ['admin', 'dosen'])
+                    ->first();
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'User dengan email tersebut tidak ditemukan atau bukan pengajar/dosen.');
+        }
+
+        $kelas = MataKuliah::findOrFail($id);
+
+        $exists = $kelas->teachers()->where('users.user_id', $user->user_id)->exists();
+        if ($exists) {
+            return redirect()->back()->with('error', 'Pengajar tersebut sudah ada di kelas ini.');
+        }
+
+        $kelas->teachers()->attach($user->user_id, [
+            'role' => 'co-teacher',
+            'status' => 'pending'
+        ]);
+
+        return redirect()->back()->with('success', 'Undangan pengajar berhasil dikirim ke ' . $user->email);
+    }
+
+    public function inviteStudents(Request $request, $id)
+    {
+        $kelas = MataKuliah::findOrFail($id);
+
+        if ($request->has('user_ids')) {
+            $userIds = $request->input('user_ids');
+            foreach ($userIds as $userId) {
+                $exists = \Illuminate\Support\Facades\DB::table('kelas_mahasiswa')
+                    ->where('mata_kuliah_id', $id)
+                    ->where('user_id', $userId)
+                    ->exists();
+                if (!$exists) {
+                    \Illuminate\Support\Facades\DB::table('kelas_mahasiswa')->insert([
+                        'mata_kuliah_id' => $id,
+                        'user_id' => $userId,
+                        'status' => 'pending',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+            return redirect()->back()->with('success', 'Mahasiswa berhasil diundang.');
+        }
+
+        if ($request->has('emails')) {
+            $emailsInput = $request->input('emails');
+            $emails = preg_split('/[\s,]+/', $emailsInput, -1, PREG_SPLIT_NO_EMPTY);
+            
+            $invitedCount = 0;
+            $notFound = [];
+
+            foreach ($emails as $email) {
+                $student = User::where('email', $email)->where('role', 'mahasiswa')->first();
+                if ($student) {
+                    $exists = \Illuminate\Support\Facades\DB::table('kelas_mahasiswa')
+                        ->where('mata_kuliah_id', $id)
+                        ->where('user_id', $student->user_id)
+                        ->exists();
+                    if (!$exists) {
+                        \Illuminate\Support\Facades\DB::table('kelas_mahasiswa')->insert([
+                            'mata_kuliah_id' => $id,
+                            'user_id' => $student->user_id,
+                            'status' => 'pending',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                        $invitedCount++;
+                    }
+                } else {
+                    $notFound[] = $email;
+                }
+            }
+
+            $msg = "$invitedCount mahasiswa berhasil diundang.";
+            if (count($notFound) > 0) {
+                $msg .= " Email berikut tidak ditemukan di sistem: " . implode(', ', $notFound);
+            }
+            return redirect()->back()->with('success', $msg);
+        }
+
+        return redirect()->back()->with('error', 'Data input undangan tidak valid.');
     }
 }

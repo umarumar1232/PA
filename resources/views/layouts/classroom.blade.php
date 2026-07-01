@@ -199,28 +199,28 @@
             
             <div class="gc-md-input-group">
               <input type="text" name="nama_kelas" id="nama_kelas_input" placeholder=" " required autocomplete="off">
-              <label>Nama kelas*</label>
+              <label>Nama*</label>
             </div>
             <div class="gc-input-helper">*Wajib diisi</div>
 
             <div class="gc-md-input-group">
               <input type="text" name="bagian" id="bagian_input" placeholder=" " autocomplete="off">
-              <label>Bagian</label>
+              <label>Kelas</label>
             </div>
 
             <div class="gc-md-input-group">
-              <input type="text" name="tingkat" id="tingkat_input" placeholder=" " autocomplete="off">
-              <label>Tingkat</label>
+              <input type="text" name="jadwal" id="jadwal_input" placeholder=" " autocomplete="off">
+              <label>Jadwal</label>
             </div>
 
             <div class="gc-md-input-group">
               <input type="text" name="mata_pelajaran" id="mata_pelajaran_input" placeholder=" " autocomplete="off">
-              <label>Mata pelajaran</label>
+              <label>Subject / Mata Kuliah</label>
             </div>
 
             <div class="gc-md-input-group">
               <input type="text" name="ruang" id="ruang_input" placeholder=" " autocomplete="off">
-              <label>Ruang</label>
+              <label>Ruangan</label>
             </div>
 
           </div>

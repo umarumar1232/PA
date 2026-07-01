@@ -13,6 +13,7 @@ class MataKuliah extends Model
         'nama_mk',
         'semester',
         'bagian',
+        'jadwal',
         'tingkat',
         'mata_pelajaran',
         'ruang',
@@ -42,6 +43,26 @@ class MataKuliah extends Model
      */
     public function enrolledStudents()
     {
-        return $this->belongsToMany(User::class, 'kelas_mahasiswa', 'mata_kuliah_id', 'user_id', 'id', 'user_id');
+        return $this->belongsToMany(User::class, 'kelas_mahasiswa', 'mata_kuliah_id', 'user_id', 'id', 'user_id')
+                    ->wherePivot('status', 'accepted');
+    }
+
+    /**
+     * Semua mahasiswa yang diinvite tapi pending
+     */
+    public function pendingStudents()
+    {
+        return $this->belongsToMany(User::class, 'kelas_mahasiswa', 'mata_kuliah_id', 'user_id', 'id', 'user_id')
+                    ->wherePivot('status', 'pending');
+    }
+
+    /**
+     * Semua pengajar (dosen/admin) untuk kelas ini
+     */
+    public function teachers()
+    {
+        return $this->belongsToMany(User::class, 'kelas_pengajar', 'mata_kuliah_id', 'user_id', 'id', 'user_id')
+                    ->withPivot('role', 'status')
+                    ->withTimestamps();
     }
 }

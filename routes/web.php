@@ -31,6 +31,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/home', [MataKuliahController::class, 'index'])->name('mahasiswa.home');
     Route::get('/mahasiswa/kelas/{id}', [MataKuliahController::class, 'show'])->name('mahasiswa.kelas.show');
     Route::post('/mahasiswa/kelas/join', [MataKuliahController::class, 'join'])->name('mahasiswa.kelas.join');
+    Route::post('/mahasiswa/kelas/invitation/{id}/accept', [MataKuliahController::class, 'acceptStudentInvitation'])->name('mahasiswa.kelas.invitation.accept');
+    Route::post('/mahasiswa/kelas/invitation/{id}/decline', [MataKuliahController::class, 'declineStudentInvitation'])->name('mahasiswa.kelas.invitation.decline');
+
+    // Detail Materi & Tugas (bisa diakses semua role)
+    Route::get('/mahasiswa/kelas/{kelasId}/materi/{id}', [MataKuliahController::class, 'showMateri'])->name('mahasiswa.kelas.materi.show');
+    Route::get('/mahasiswa/kelas/{kelasId}/tugas/{id}', [MataKuliahController::class, 'showTugas'])->name('mahasiswa.kelas.tugas.show');
+    Route::post('/mahasiswa/kelas/{kelasId}/tugas/{id}/submit', [MataKuliahController::class, 'submitTugas'])->name('mahasiswa.kelas.tugas.submit');
 });
 
 /*
@@ -55,6 +62,24 @@ Route::middleware(['auth', 'admin'])
 
         Route::post('/kelas/{id}/tugas', [DashboardController::class, 'storeTugas'])
             ->name('kelas.tugas.store');
+
+        Route::post('/kelas/{id}/update', [DashboardController::class, 'updateKelas'])
+            ->name('kelas.update');
+
+        Route::post('/kelas/{id}/materi', [DashboardController::class, 'storeMateri'])
+            ->name('kelas.materi.store');
+
+        Route::post('/kelas/{id}/invite-teacher', [DashboardController::class, 'inviteTeacher'])
+            ->name('kelas.invite-teacher');
+
+        Route::post('/kelas/{id}/invite-students', [DashboardController::class, 'inviteStudents'])
+            ->name('kelas.invite-students');
+
+        Route::post('/kelas/invitation/{id}/accept', [DashboardController::class, 'acceptTeacherInvitation'])
+            ->name('kelas.invitation.accept');
+
+        Route::post('/kelas/invitation/{id}/decline', [DashboardController::class, 'declineTeacherInvitation'])
+            ->name('kelas.invitation.decline');
 
         Route::get('/admin/mahasiswa', [UserController::class, 'mahasiswa'])
             ->name('mahasiswa.index');

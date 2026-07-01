@@ -4,6 +4,39 @@
 
 @section('content')
 <div class="container-fluid py-4">
+    {{-- Undangan Mengajar (Co-Teacher) --}}
+    @if(isset($pendingInvitations) && !$pendingInvitations->isEmpty())
+        <div class="mb-5">
+            <h5 class="text-primary font-weight-bold mb-3"><i class="fas fa-envelope-open-text mr-2"></i>Undangan Mengajar</h5>
+            <div class="row">
+                @foreach($pendingInvitations as $inv)
+                    <div class="col-md-4 mb-3">
+                        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden; border-left: 5px solid #1a73e8;">
+                            <div class="card-body p-3">
+                                <h6 class="font-weight-bold text-dark mb-1">{{ $inv->nama_mk }}</h6>
+                                <p class="text-muted small mb-2">
+                                    <strong>Kelas:</strong> {{ $inv->bagian ?? 'Tanpa kelas' }}<br>
+                                    <strong>Jadwal:</strong> {{ $inv->jadwal ?? 'Tanpa jadwal' }}<br>
+                                    <strong>Subject:</strong> {{ $inv->mata_pelajaran ?? 'Tanpa subject' }}
+                                </p>
+                                <div class="d-flex justify-content-end" style="gap: 8px;">
+                                    <form action="{{ route('admin.kelas.invitation.decline', $inv->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 20px; font-weight: 500; font-size: 12px;">Tolak</button>
+                                    </form>
+                                    <form action="{{ route('admin.kelas.invitation.accept', $inv->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-primary" style="border-radius: 20px; font-weight: 500; font-size: 12px; background-color: #1a73e8; border: none;">Terima</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="font-weight-normal text-muted mb-0">Daftar Kelas</h4>
         <button class="btn btn-primary d-flex align-items-center shadow-sm" data-toggle="modal" data-target="#createClassModal" style="border-radius: 20px; padding: 8px 16px; font-weight: 500; font-size: 14px; background-color: #1a73e8; border: none;">
@@ -37,7 +70,7 @@
                             {{ $mk->bagian ?? 'Tanpa bagian' }}
                         </div>
                         <div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">
-                            {{ $mk->kode_mk }} &bull; Semester {{ $mk->semester }}
+                            {{ $mk->kode_mk }}
                         </div>
                         <!-- Avatar inisial -->
                         <div style="position: absolute; right: 16px; bottom: -28px; width: 56px; height: 56px; border-radius: 50%; background: white; color: {{ $c['bg'] }}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 1;">
@@ -46,11 +79,11 @@
                     </div>
                     <div class="gc-card-body" style="padding: 36px 16px 12px 16px; min-height: 120px;">
                         <div class="mb-2" style="font-size: 13px; color: #5f6368;">
-                            @if($mk->tingkat)
-                                <div class="mb-1"><i class="fas fa-layer-group mr-2" style="width: 16px;"></i>Tingkat: <strong>{{ $mk->tingkat }}</strong></div>
+                            @if($mk->jadwal)
+                                <div class="mb-1"><i class="far fa-calendar-alt mr-2" style="width: 16px;"></i>Jadwal: <strong>{{ $mk->jadwal }}</strong></div>
                             @endif
                             @if($mk->mata_pelajaran)
-                                <div class="mb-1"><i class="fas fa-book mr-2" style="width: 16px;"></i>Mapel: <strong>{{ $mk->mata_pelajaran }}</strong></div>
+                                <div class="mb-1"><i class="fas fa-book mr-2" style="width: 16px;"></i>Subject: <strong>{{ $mk->mata_pelajaran }}</strong></div>
                             @endif
                             @if($mk->ruang)
                                 <div class="mb-1"><i class="fas fa-door-open mr-2" style="width: 16px;"></i>Ruang: <strong>{{ $mk->ruang }}</strong></div>

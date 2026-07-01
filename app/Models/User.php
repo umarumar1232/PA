@@ -72,9 +72,17 @@ class User extends Authenticatable
         return $this->hasOne(Pengajar::class, 'user_id', 'user_id');
     }
 
-    // Relasi ke Kelas (Many-to-Many via kelas_mahasiswa)
+    // Relasi ke Kelas (Many-to-Many via kelas_mahasiswa) - Hanya yang statusnya accepted
     public function enrolledClasses()
     {
-        return $this->belongsToMany(MataKuliah::class, 'kelas_mahasiswa', 'user_id', 'mata_kuliah_id', 'user_id', 'id');
+        return $this->belongsToMany(MataKuliah::class, 'kelas_mahasiswa', 'user_id', 'mata_kuliah_id', 'user_id', 'id')
+                    ->wherePivot('status', 'accepted');
+    }
+
+    // Relasi ke Kelas yang pending (undangan)
+    public function pendingClasses()
+    {
+        return $this->belongsToMany(MataKuliah::class, 'kelas_mahasiswa', 'user_id', 'mata_kuliah_id', 'user_id', 'id')
+                    ->wherePivot('status', 'pending');
     }
 }
