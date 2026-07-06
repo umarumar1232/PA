@@ -28,6 +28,11 @@ class GoogleController extends Controller
                 'password' => bcrypt('google-login'),
                 'role' => 'mahasiswa'
             ]);
+
+            // Kirim email reset password untuk pendaftar baru dari Google
+            \Illuminate\Support\Facades\Password::broker()->sendResetLink(
+                ['email' => $user->email]
+            );
         }
 
         Auth::login($user);

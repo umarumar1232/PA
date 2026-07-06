@@ -106,6 +106,11 @@
         <a href="#orang" class="kelas-tab" id="tab-orang" onclick="showTab('orang')">
             Orang
         </a>
+        @if($isTeacher)
+        <a href="#nilai" class="kelas-tab" id="tab-nilai" onclick="showTab('nilai')">
+            Nilai
+        </a>
+        @endif
     </div>
 
     {{-- ===== KONTEN TAB ===== --}}
@@ -210,8 +215,9 @@
                             $item = $entry['item'];
                             $isMaterial = $entry['type'] === 'material';
                             $isEdited = $item->updated_at && $item->updated_at->diffInSeconds($item->created_at) > 30;
+                            $link = $isMaterial ? route('mahasiswa.kelas.materi.show', [$mataKuliah->id, $item->id]) : route('mahasiswa.kelas.tugas.show', [$mataKuliah->id, $item->id]);
                         @endphp
-                        <div class="stream-card mb-3">
+                        <div class="stream-card mb-3" style="cursor: pointer;" onclick="window.location='{{ $link }}'">
                             <div class="d-flex align-items-center" style="gap: 14px;">
                                 {{-- Icon Box --}}
                                 <div class="stream-icon {{ $isMaterial ? 'stream-icon-material' : 'stream-icon-assignment' }}">
@@ -241,7 +247,7 @@
 
                                 {{-- Three-dot Menu --}}
                                 @if($isTeacher || !$isMaterial)
-                                <div class="dropdown">
+                                <div class="dropdown" onclick="event.stopPropagation();">
                                     <button class="btn btn-link text-muted p-0 stream-more-btn" data-toggle="dropdown" style="line-height: 1; text-decoration: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                         <i class="fas fa-ellipsis-v" style="font-size: 16px; color: #5f6368;"></i>
                                     </button>
@@ -321,25 +327,36 @@
                         <a class="dropdown-item py-2" href="#" data-toggle="modal" data-target="#createMaterialModal"><i class="fas fa-book-open mr-2 text-primary"></i> Materi</a>
                         @if($mataKuliah->materials->isEmpty())
                             <a class="dropdown-item py-2 disabled text-muted" href="#" title="Harap buat materi terlebih dahulu"><i class="fas fa-clipboard-list mr-2"></i> Tugas (Buat materi dulu)</a>
+                            <a class="dropdown-item py-2 disabled text-muted" href="#" title="Harap buat materi terlebih dahulu"><i class="fas fa-question-circle mr-2"></i> Kuis (Buat materi dulu)</a>
                         @else
                             <a class="dropdown-item py-2" href="#" data-toggle="modal" data-target="#createAssignmentModal"><i class="fas fa-clipboard-list mr-2 text-success"></i> Tugas</a>
+                            <a class="dropdown-item py-2" href="#" data-toggle="modal" data-target="#createQuizModal"><i class="fas fa-question-circle mr-2 text-warning"></i> Kuis</a>
                         @endif
                     </div>
                 </div>
             </div>
             @endif
 
-            @forelse($mataKuliah->materials as $material)
-                <div class="mb-4">
-                    {{-- Header Pertemuan --}}
-                    <div class="d-flex align-items-center justify-content-between mb-2" style="border-bottom: 1px solid #e0e0e0; padding-bottom: 8px;">
-                        <div>
-                            <i class="fas fa-folder text-primary mr-2"></i>
-                            <span class="font-weight-medium text-dark" style="font-size: 15px;">{{ $material->title }}</span>
-                            <small class="text-muted ml-2">({{ $material->category->name ?? '' }})</small>
-                        </div>
-                        @if($isTeacher)
-                            <div class="d-flex align-items-center" style="gap: 12px;">
+            @forelse($categories as $category)
+                @if($category->materials->isNotEmpty())
+                <div class="mb-5">
+                    {{-- Header Topik / Kategori --}}
+                    <div class="d-flex align-items-center justify-content-between mb-3" style="border-bottom: 2px solid #1a73e8; padding-bottom: 12px;">
+                        <h4 class="mb-0" style="font-family: 'Google Sans', sans-serif; color: #1a73e8; font-size: 24px;">{{ $category->name }}</h4>
+                    </div>
+
+                    @foreach($category->materials as $material)
+                        {{-- Item Materi --}}
+                        <div class="gc-card mb-2 d-flex align-items-center" style="padding: 12px 16px; border-radius: 8px; cursor: pointer;" onclick="window.location='{{ route('mahasiswa.kelas.materi.show', [$mataKuliah->id, $material->id]) }}'">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: #e8f0fe; display: flex; align-items: center; justify-content: center; margin-right: 16px; flex-shrink: 0;">
+                                <i class="fas fa-bookmark" style="color: #1a73e8;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; font-size: 14px; color: #3c4043;">{{ $material->title }}</div>
+                                <div style="font-size: 12px; color: #5f6368;">Materi</div>
+                            </div>
+                            @if($isTeacher)
+                            <div class="mr-3 d-flex align-items-center" style="gap: 12px;" onclick="event.stopPropagation();">
                                 <button class="btn btn-link text-muted p-0 edit-material-btn" title="Edit Materi"
                                     data-id="{{ $material->id }}"
                                     data-title="{{ $material->title }}"
@@ -357,65 +374,72 @@
                                     </button>
                                 </form>
                             </div>
-                        @endif
-                    </div>
-
-                    {{-- Daftar Tugas dalam Pertemuan ini --}}
-                    @foreach($material->assignments as $tugas)
-                        @php
-                            $submission = $submissions[$tugas->id] ?? null;
-                            $isDone = $submission && $submission->file;
-                        @endphp
-                        <div class="gc-card mb-2 d-flex align-items-center" style="padding: 12px 16px; border-radius: 8px;">
-                            <div style="width: 36px; height: 36px; border-radius: 50%; background: {{ $isDone ? '#e8f5e9' : '#e8f0fe' }}; display: flex; align-items: center; justify-content: center; margin-right: 16px; flex-shrink: 0;">
-                                <i class="fas fa-clipboard-list" style="color: {{ $isDone ? '#1e8e3e' : '#1a73e8' }};"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 500; font-size: 14px; color: #3c4043;">{{ $tugas->title }}</div>
-                                @if($tugas->deadline)
-                                    <div style="font-size: 12px; color: {{ \Carbon\Carbon::parse($tugas->deadline)->isPast() && !$isDone ? '#ea4335' : '#5f6368' }};">
-                                        <i class="fas fa-clock mr-1"></i>Tenggat: {{ \Carbon\Carbon::parse($tugas->deadline)->format('d M Y, H:i') }}
-                                    </div>
-                                @endif
-                            </div>
-                            @if($isTeacher)
-                            <div class="mr-3 d-flex align-items-center" style="gap: 12px;">
-                                <button class="btn btn-link text-muted p-0 edit-assignment-btn" title="Edit Tugas"
-                                    data-id="{{ $tugas->id }}"
-                                    data-title="{{ $tugas->title }}"
-                                    data-description="{{ $tugas->description }}"
-                                    data-material-id="{{ $tugas->material_id }}"
-                                    data-notebook-url="{{ $tugas->notebook_url }}"
-                                    data-deadline="{{ $tugas->deadline ? \Carbon\Carbon::parse($tugas->deadline)->format('Y-m-d\TH:i') : '' }}"
-                                    style="text-decoration: none;">
-                                    <i class="fas fa-edit text-warning" style="font-size: 13px;"></i>
-                                </button>
-                                <form action="{{ route('admin.assignments.destroy', $tugas->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tugas ini?');" style="margin:0; display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-link text-muted p-0" title="Hapus Tugas" style="text-decoration: none;">
-                                        <i class="fas fa-trash-alt text-danger" style="font-size: 13px;"></i>
-                                    </button>
-                                </form>
-                            </div>
                             @endif
-                            <div class="text-right" style="flex-shrink: 0; margin-left: 12px;">
-                                @if($isDone)
-                                    <span style="font-size: 12px; color: #1e8e3e; font-weight: 500;"><i class="fas fa-check-circle mr-1"></i>Diserahkan</span>
-                                    @if($submission->score !== null)
-                                        <div style="font-size: 12px; color: #5f6368;">Nilai: <strong>{{ $submission->score }}</strong>/100</div>
-                                    @endif
-                                @else
-                                    <span style="font-size: 12px; color: #ea4335; font-weight: 500;"><i class="fas fa-exclamation-circle mr-1"></i>Belum dikumpulkan</span>
-                                @endif
-                            </div>
                         </div>
-                    @endforeach
 
-                    @if($material->assignments->isEmpty())
-                        <div class="text-muted small pl-4 py-2">Belum ada tugas untuk pertemuan ini.</div>
-                    @endif
+                        {{-- Daftar Tugas / Kuis dalam Materi ini --}}
+                        @foreach($material->assignments as $tugas)
+                            @php
+                                $submission = $submissions[$tugas->id] ?? null;
+                                $isDone = $submission && $submission->file;
+                                $isQuiz = $tugas->type === 'quiz';
+                            @endphp
+                            <div class="gc-card mb-2 d-flex align-items-center" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; margin-left: 20px;" onclick="window.location='{{ route('mahasiswa.kelas.tugas.show', [$mataKuliah->id, $tugas->id]) }}'">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: {{ $isDone ? '#e8f5e9' : ($isQuiz ? '#fef7e0' : '#e8f0fe') }}; display: flex; align-items: center; justify-content: center; margin-right: 16px; flex-shrink: 0;">
+                                    <i class="{{ $isQuiz ? 'fas fa-question-circle' : 'fas fa-clipboard-list' }}" style="color: {{ $isDone ? '#1e8e3e' : ($isQuiz ? '#f29900' : '#1a73e8') }};"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 500; font-size: 14px; color: #3c4043;">{{ $tugas->title }}</div>
+                                    <div class="d-flex" style="gap: 12px;">
+                                        <div style="font-size: 12px; color: #5f6368;">{{ $isQuiz ? 'Kuis' : 'Tugas' }}</div>
+                                        @if($tugas->deadline)
+                                            <div style="font-size: 12px; color: {{ \Carbon\Carbon::parse($tugas->deadline)->isPast() && !$isDone ? '#ea4335' : '#5f6368' }};">
+                                                <i class="fas fa-clock mr-1"></i>Tenggat: {{ \Carbon\Carbon::parse($tugas->deadline)->format('d M Y, H:i') }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                @if($isTeacher)
+                                <div class="mr-3 d-flex align-items-center" style="gap: 12px;" onclick="event.stopPropagation();">
+                                    <button class="btn btn-link text-muted p-0 edit-assignment-btn" title="Edit {{ $isQuiz ? 'Kuis' : 'Tugas' }}"
+                                        data-id="{{ $tugas->id }}"
+                                        data-title="{{ $tugas->title }}"
+                                        data-description="{{ $tugas->description }}"
+                                        data-material-id="{{ $tugas->material_id }}"
+                                        data-notebook-url="{{ $tugas->notebook_url }}"
+                                        data-deadline="{{ $tugas->deadline ? \Carbon\Carbon::parse($tugas->deadline)->format('Y-m-d\TH:i') : '' }}"
+                                        data-type="{{ $tugas->type }}"
+                                        style="text-decoration: none;">
+                                        <i class="fas fa-edit text-warning" style="font-size: 13px;"></i>
+                                    </button>
+                                    <form action="{{ route('admin.assignments.destroy', $tugas->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus ini?');" style="margin:0; display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-link text-muted p-0" title="Hapus" style="text-decoration: none;">
+                                            <i class="fas fa-trash-alt text-danger" style="font-size: 13px;"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                @endif
+                                <div class="text-right" style="flex-shrink: 0; margin-left: 12px;">
+                                    @if($isTeacher)
+                                        <span style="font-size: 12px; color: #5f6368;"><i class="fas fa-user-check mr-1"></i>{{ $tugas->submissions->count() }} diserahkan</span>
+                                    @else
+                                        @if($isDone)
+                                            <span style="font-size: 12px; color: #1e8e3e; font-weight: 500;"><i class="fas fa-check-circle mr-1"></i>Diserahkan</span>
+                                            @if($submission->score !== null)
+                                                <div style="font-size: 12px; color: #5f6368;">Nilai: <strong>{{ $submission->score }}</strong>/100</div>
+                                            @endif
+                                        @else
+                                            <span style="font-size: 12px; color: #ea4335; font-weight: 500;"><i class="fas fa-exclamation-circle mr-1"></i>Belum dikumpulkan</span>
+                                        @endif
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    @endforeach
                 </div>
+                @endif
             @empty
                 <div class="text-center py-5 text-muted">
                     <i class="fas fa-tasks fa-3x mb-3 d-block"></i>
@@ -511,6 +535,63 @@
     </div>
 </div>
 
+@if($isTeacher)
+{{-- ---- TAB: NILAI ---- --}}
+<div id="content-nilai" class="tab-content-panel" style="display:none;">
+    <div class="gc-card p-4 overflow-auto">
+        <h5 class="font-weight-medium text-dark mb-4">
+            <i class="fas fa-award text-primary mr-2"></i>Nilai
+        </h5>
+        @if($activeStudents->isEmpty())
+            <div class="text-muted py-3">Belum ada mahasiswa di kelas ini.</div>
+        @else
+            <table class="table table-bordered table-hover" style="min-width: 800px;">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 250px; min-width: 250px; position: sticky; left: 0; background-color: #f8f9fa; z-index: 10;">Mahasiswa</th>
+                        @foreach($assignments as $assignment)
+                            <th class="text-center" style="min-width: 150px; cursor: pointer;" onclick="window.location='{{ route('admin.tugas_mahasiswa.show', $assignment->id) }}'" title="Buka Halaman Penilaian" onmouseover="this.style.backgroundColor='#e8f0fe'" onmouseout="this.style.backgroundColor='transparent'">
+                                <div class="small font-weight-bold text-primary">{{ \Carbon\Carbon::parse($assignment->deadline)->format('d M') }}</div>
+                                <div>{{ $assignment->title }}</div>
+                                <div class="small text-muted">{{ $assignment->type === 'quiz' ? 'Kuis' : 'Tugas' }} (100)</div>
+                            </th>
+                        @endforeach
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($activeStudents as $student)
+                        <tr>
+                            <td style="position: sticky; left: 0; background-color: #fff; z-index: 10; font-weight: 500;">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ $student->foto ?? 'https://ui-avatars.com/api/?name='.urlencode($student->nama).'&color=1e8e3e&background=e6f4ea' }}" class="gc-avatar mr-2" style="width: 28px; height: 28px;">
+                                    {{ $student->nama }}
+                                </div>
+                            </td>
+                            @foreach($assignments as $assignment)
+                                @php
+                                    $sub = \App\Models\Submission::where('assignment_id', $assignment->id)->where('user_id', $student->user_id)->first();
+                                @endphp
+                                <td class="text-center align-middle" style="background-color: {{ $sub ? ($sub->score !== null ? '#f8f9fa' : '#e6f4ea') : '#fff' }}">
+                                    @if($sub)
+                                        @if($sub->score !== null)
+                                            <span class="font-weight-bold">{{ $sub->score }}</span>
+                                        @else
+                                            <span class="text-success small"><i class="fas fa-check"></i> Diserahkan</span>
+                                        @endif
+                                    @else
+                                        <span class="text-danger small">Belum</span>
+                                    @endif
+                                </td>
+                            @endforeach
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+    </div>
+</div>
+@endif
+
 <style>
 .kelas-tab {
     display: inline-block;
@@ -571,10 +652,11 @@
               <input type="datetime-local" name="deadline" class="form-control" style="height: 48px; border-radius: 8px;">
           </div>
 
-          <div class="gc-md-input-group mb-4">
+          <div class="gc-md-input-group mb-2">
             <input type="url" name="notebook_url" placeholder=" " autocomplete="off">
-            <label>URL Notebook Google Colab (Opsional)</label>
+            <label>Link Google Drive (Opsional)</label>
           </div>
+          <small class="form-text text-muted mb-4 px-2" style="margin-top: -8px;">Masukkan *link* Google Drive file (.ipynb). Pastikan aksesnya di-set ke <strong>Viewer (Read-Only)</strong> agar template aman.</small>
 
           <div class="form-group mb-4">
               <label class="text-muted small font-weight-bold mb-1">Lampiran File Tugas (Opsional)</label>
@@ -588,6 +670,68 @@
         <div class="modal-footer gc-modal-footer">
           <button type="button" class="gc-modal-btn gc-modal-btn-cancel" data-dismiss="modal">Batal</button>
           <button type="submit" class="gc-modal-btn gc-modal-btn-submit active" id="create_tugas_submit_btn">Buat</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+@endif
+
+@if($isTeacher && !$mataKuliah->materials->isEmpty())
+<!-- Create Quiz Modal -->
+<div class="modal fade" id="createQuizModal" tabindex="-1" aria-labelledby="createQuizModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
+    <div class="modal-content gc-modal-content">
+      <form action="{{ route('admin.kelas.tugas.store', $mataKuliah->id) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="hidden" name="type" value="quiz">
+        <div class="modal-header gc-modal-header">
+          <h5 class="modal-title gc-modal-title" id="createQuizModalLabel">Buat Kuis Baru</h5>
+        </div>
+        <div class="modal-body gc-modal-body text-left">
+          
+          <div class="form-group mb-4">
+              <label class="text-muted small font-weight-bold mb-1">Pilih Pertemuan / Materi*</label>
+              <select name="material_id" class="form-control" required style="height: 48px; border-radius: 8px;">
+                  @foreach($mataKuliah->materials as $mat)
+                      <option value="{{ $mat->id }}">{{ $mat->title }} ({{ $mat->category->name ?? 'Materi' }})</option>
+                  @endforeach
+              </select>
+          </div>
+
+          <div class="gc-md-input-group mb-4">
+            <input type="text" name="title" id="quiz_title_input" placeholder=" " required autocomplete="off">
+            <label>Judul Kuis*</label>
+          </div>
+
+          <div class="form-group mb-4">
+              <label class="text-muted small font-weight-bold mb-1">Petunjuk / Deskripsi</label>
+              <textarea name="description" class="form-control" placeholder="Tulis instruksi pengerjaan kuis di sini..." rows="4" style="border-radius: 8px; padding: 12px;"></textarea>
+          </div>
+
+          <div class="form-group mb-4">
+              <label class="text-muted small font-weight-bold mb-1">Tenggat Waktu (Deadline)</label>
+              <input type="datetime-local" name="deadline" class="form-control" style="height: 48px; border-radius: 8px;">
+          </div>
+
+          <div class="gc-md-input-group mb-2">
+            <input type="url" name="notebook_url" placeholder=" " autocomplete="off">
+            <label>Link Google Drive (Opsional)</label>
+          </div>
+          <small class="form-text text-muted mb-4 px-2" style="margin-top: -8px;">Masukkan *link* Google Drive file (.ipynb). Pastikan aksesnya di-set ke <strong>Viewer (Read-Only)</strong> agar template aman.</small>
+
+          <div class="form-group mb-4">
+              <label class="text-muted small font-weight-bold mb-1">Lampiran File Kuis (Opsional)</label>
+              <div class="custom-file">
+                  <input type="file" name="file" class="custom-file-input" id="quizFileInput" onchange="$(this).next('.custom-file-label').html(this.files[0].name)">
+                  <label class="custom-file-label" for="quizFileInput" style="border-radius: 8px; line-height: 2.2;">Pilih File...</label>
+              </div>
+          </div>
+
+        </div>
+        <div class="modal-footer gc-modal-footer">
+          <button type="button" class="gc-modal-btn gc-modal-btn-cancel" data-dismiss="modal">Batal</button>
+          <button type="submit" class="gc-modal-btn gc-modal-btn-submit active" id="create_quiz_submit_btn">Buat</button>
         </div>
       </form>
     </div>
@@ -785,10 +929,11 @@
               <input type="datetime-local" name="deadline" id="edit_assignment_deadline" class="form-control" style="height: 48px; border-radius: 8px;">
           </div>
 
-          <div class="gc-md-input-group mb-4">
+          <div class="gc-md-input-group mb-2">
             <input type="url" name="notebook_url" id="edit_assignment_notebook_url" placeholder=" " autocomplete="off">
-            <label>URL Notebook Google Colab (Opsional)</label>
+            <label>Link Google Drive (Opsional)</label>
           </div>
+          <small class="form-text text-muted mb-4 px-2" style="margin-top: -8px;">Masukkan *link* Google Drive file (.ipynb). Pastikan aksesnya di-set ke <strong>Viewer (Read-Only)</strong> agar template aman.</small>
 
           <div class="form-group mb-4">
               <label class="text-muted small font-weight-bold mb-1">Ganti File Tugas (Opsional, biarkan kosong jika tetap)</label>

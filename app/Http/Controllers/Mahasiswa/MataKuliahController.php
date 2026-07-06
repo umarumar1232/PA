@@ -67,6 +67,10 @@ class MataKuliahController extends Controller
             'materials.assignments.submissions',
         ])->findOrFail($id);
 
+        $categories = \App\Models\Category::with(['materials' => function ($query) use ($id) {
+            $query->where('matakuliah_id', $id);
+        }, 'materials.assignments'])->get();
+
         $user = Auth::user();
 
         // Cek apakah user adalah pengajar kelas ini yang sudah accepted
@@ -90,8 +94,6 @@ class MataKuliahController extends Controller
             ->whereIn('assignment_id', $assignments->pluck('id'))
             ->get()
             ->keyBy('assignment_id');
-
-        $categories = \App\Models\Category::all();
 
         // Dapatkan pengajar dan mahasiswa aktif/pending
         $activeTeachers = $mataKuliah->teachers()->wherePivot('status', 'accepted')->get();

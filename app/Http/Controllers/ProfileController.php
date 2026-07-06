@@ -26,13 +26,25 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        
+        $user->fill([
+            'nama' => $request->nama,
+            'email' => $request->email,
+        ]);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
+
+        if ($user->role === 'mahasiswa' && $request->has('nim')) {
+            \App\Models\Mahasiswa::updateOrCreate(
+                ['user_id' => $user->user_id],
+                ['nim' => $request->nim]
+            );
+        }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

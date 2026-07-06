@@ -88,6 +88,7 @@ class DashboardController extends Controller
     {
         $data = $request->validate([
             'material_id' => 'required|exists:materials,id',
+            'type' => 'nullable|string|in:assignment,quiz',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'notebook_url' => 'nullable|url',

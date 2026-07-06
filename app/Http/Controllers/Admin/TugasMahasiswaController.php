@@ -58,8 +58,9 @@ class TugasMahasiswaController extends Controller
      */
     public function show($id)
     {
-        $assignment = Assignment::findOrFail($id);
-        $mahasiswa = User::where('role', 'mahasiswa')->get();
+        $assignment = Assignment::with('material.mataKuliah')->findOrFail($id);
+        $mataKuliah = $assignment->material->mataKuliah;
+        $mahasiswa = $mataKuliah ? $mataKuliah->enrolledStudents()->get() : User::where('role', 'mahasiswa')->get();
 
         $submissions = Submission::where('assignment_id', $id)->get()
                         ->keyBy('user_id');

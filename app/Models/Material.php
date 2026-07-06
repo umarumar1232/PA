@@ -41,4 +41,9 @@ class Material extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function mataKuliah()
+    {
+        return $this->belongsTo(MataKuliah::class, 'matakuliah_id');
+    }
 }

@@ -33,13 +33,25 @@
       </a>
     </div>
     <div class="gc-navbar-right d-flex align-items-center">
-      <button class="btn btn-link text-dark p-0 mr-3 d-flex align-items-center justify-content-center navbar-plus-btn" 
-              data-toggle="modal" 
-              data-target="{{ Auth::user()->role === 'admin' ? '#createClassModal' : '#joinClassModal' }}" 
-              style="border-radius: 50%; width: 40px; height: 40px; text-decoration: none; transition: background-color 0.2s;" 
-              title="{{ Auth::user()->role === 'admin' ? 'Buat Kelas' : 'Gabung Kelas' }}">
-        <i class="fas fa-plus" style="font-size: 20px; color: #5f6368;"></i>
-      </button>
+      <div class="dropdown d-inline-block">
+        <button class="btn btn-link text-dark p-0 mr-3 d-flex align-items-center justify-content-center navbar-plus-btn dropdown-toggle" 
+                id="dropdownPlusBtn"
+                data-toggle="dropdown" 
+                aria-haspopup="true"
+                aria-expanded="false"
+                style="border-radius: 50%; width: 40px; height: 40px; text-decoration: none; transition: background-color 0.2s;" 
+                title="Buat atau Gabung Kelas">
+          <i class="fas fa-plus" style="font-size: 20px; color: #5f6368;"></i>
+        </button>
+        <div class="dropdown-menu dropdown-menu-right mt-2 shadow-sm" aria-labelledby="dropdownPlusBtn" style="border-radius: 8px; border: 1px solid #e0e0e0;">
+          @if(Auth::user()->role === 'admin' || Auth::user()->role === 'dosen')
+            <a class="dropdown-item py-2" href="#" data-toggle="modal" data-target="#createClassModal">Buat Kelas</a>
+          @endif
+          @if(Auth::user()->role === 'mahasiswa' || Auth::user()->role === 'dosen' || Auth::user()->role === 'admin')
+            <a class="dropdown-item py-2" href="#" data-toggle="modal" data-target="#joinClassModal">Gabung ke kelas</a>
+          @endif
+        </div>
+      </div>
       <div class="dropdown">
         <img src="{{ Auth::user()->foto ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->nama).'&color=1a73e8&background=e8f0fe' }}" class="gc-avatar dropdown-toggle" data-toggle="dropdown" alt="User Image">
         <div class="dropdown-menu dropdown-menu-right mt-2">
@@ -146,9 +158,6 @@
 
         <div class="gc-nav-divider"></div>
         <div class="px-4 py-2 text-muted small font-weight-bold">PENILAIAN</div>
-        <a href="{{ route('admin.nilai_tugas.index') }}" class="gc-nav-item {{ request()->routeIs('admin.nilai_tugas.index') ? 'active' : '' }}">
-          <i class="fas fa-check-circle"></i> Beri Nilai
-        </a>
         <a href="{{ route('admin.nilai_tugas.rekap') }}" class="gc-nav-item {{ request()->routeIs('admin.nilai_tugas.rekap') ? 'active' : '' }}">
           <i class="fas fa-chart-bar"></i> Rekap Nilai
         </a>

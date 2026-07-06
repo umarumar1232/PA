@@ -13,11 +13,12 @@ class Assignment extends Model
 
     protected $fillable = [
         'material_id',
+        'type',
         'title',
         'description',
         'notebook_url',
         'file',
-        'deadline'
+        'deadline',
     ];
     // Relasi ke Material
     public function material()

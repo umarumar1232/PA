@@ -39,9 +39,6 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="font-weight-normal text-muted mb-0">Daftar Kelas</h4>
-        <button class="btn btn-primary d-flex align-items-center shadow-sm" data-toggle="modal" data-target="#createClassModal" style="border-radius: 20px; padding: 8px 16px; font-weight: 500; font-size: 14px; background-color: #1a73e8; border: none;">
-            <i class="fas fa-plus mr-2"></i> Buat Kelas
-        </button>
     </div>
 
     <div class="gc-course-grid">
