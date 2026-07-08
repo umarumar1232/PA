@@ -203,16 +203,37 @@ class MataKuliahController extends Controller
      */
     public function submitTugas(\Illuminate\Http\Request $request, $kelasId, $id)
     {
+        if ($request->has('unsubmit')) {
+            $user = Auth::user();
+            $sub = Submission::where('assignment_id', $id)->where('user_id', $user->user_id)->first();
+            if ($sub) {
+                // Hapus file fisik jika ada
+                if ($sub->file && \Illuminate\Support\Facades\Storage::disk('public')->exists($sub->file)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($sub->file);
+                }
+                $sub->delete();
+            }
+            return redirect()->back()->with('success', 'Pengumpulan dibatalkan.');
+        }
+
         $request->validate([
-            'file' => 'required|file|mimes:pdf,doc,docx,zip,ipynb,py|max:20480',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,zip,ipynb,py|max:20480',
+            'link' => 'nullable|url',
         ]);
 
+        if (!$request->hasFile('file') && !$request->filled('link')) {
+            return redirect()->back()->with('error', 'Harap unggah file atau masukkan link Colab.');
+        }
+
         $user = Auth::user();
-        $path = $request->file('file')->store('submissions', 'public');
+        $path = null;
+        if ($request->hasFile('file')) {
+            $path = $request->file('file')->store('submissions', 'public');
+        }
 
         Submission::updateOrCreate(
             ['assignment_id' => $id, 'user_id' => $user->user_id],
-            ['file' => $path, 'submitted_at' => now()]
+            ['file' => $path, 'link' => $request->input('link'), 'submitted_at' => now()]
         );
 
         return redirect()->route('mahasiswa.kelas.tugas.show', [$kelasId, $id])

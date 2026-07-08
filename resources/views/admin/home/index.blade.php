@@ -92,7 +92,7 @@
                     </div>
                     <div class="gc-card-footer" style="border-top: 1px solid #e0e0e0; padding: 6px 16px; display: flex; justify-content: space-between; align-items: center; background-color: #f8f9fa;">
                         <div>
-                            @if(Auth::user()->role === 'admin')
+                            @if(in_array(Auth::user()->role, ['admin', 'dosen', 'ilb']))
                                 <form action="{{ route('admin.kelas.destroy', $mk->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kelas ini beserta seluruh materi dan tugas di dalamnya?');" style="display: inline;" onclick="event.stopPropagation();">
                                     @csrf
                                     @method('DELETE')

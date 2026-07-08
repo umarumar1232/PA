@@ -84,12 +84,12 @@
   <div class="gc-drawer" id="drawer">
     <div class="py-2">
       {{-- Beranda --}}
-      <a href="{{ Auth::user()->role === 'admin' ? route('admin.dashboard') : route('mahasiswa.home') }}"
+      <a href="{{ in_array(Auth::user()->role, ['admin', 'dosen', 'ilb']) ? route('admin.dashboard') : route('mahasiswa.home') }}"
          class="gc-nav-item {{ request()->routeIs('admin.dashboard') || request()->routeIs('mahasiswa.home') ? 'active' : '' }}">
         <i class="fas fa-home"></i> Beranda
       </a>
 
-      @if(Auth::user()->role !== 'admin')
+      @if(!in_array(Auth::user()->role, ['admin', 'dosen', 'ilb']))
         {{-- Kalender --}}
         <a href="#" class="gc-nav-item text-muted">
           <i class="far fa-calendar-alt"></i> Kalender
@@ -194,7 +194,7 @@
     @yield('content')
   </div>
 
-  @if(Auth::user()->role === 'admin')
+  @if(in_array(Auth::user()->role, ['admin', 'dosen', 'ilb']))
   <!-- Create Class Modal -->
   <div class="modal fade" id="createClassModal" tabindex="-1" aria-labelledby="createClassModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 560px;">

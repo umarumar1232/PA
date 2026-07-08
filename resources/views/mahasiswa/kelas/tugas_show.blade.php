@@ -101,8 +101,12 @@
             </div>
             @endif
 
+            @php
+                $isGoogleForm = $tugas->notebook_url && (str_contains($tugas->notebook_url, 'forms.gle') || str_contains($tugas->notebook_url, 'forms.google.com') || str_contains($tugas->notebook_url, 'docs.google.com/forms'));
+            @endphp
+
             {{-- Attachments --}}
-            @if($tugas->file || $tugas->notebook_url)
+            @if($tugas->file || $isGoogleForm)
             <div class="mb-5">
                 <div style="font-size:12px;font-weight:600;color:#80868b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;">
                     Lampiran
@@ -114,20 +118,12 @@
                         <i class="fas fa-external-link-alt" style="font-size:11px;color:#9aa0a6;"></i>
                     </a>
                 @endif
-                @if($tugas->notebook_url)
-                    @php
-                        $colabUrl = $tugas->notebook_url;
-                        if (str_contains($tugas->notebook_url, 'drive.google.com')) {
-                            preg_match('/[-\w]{25,}/', $tugas->notebook_url, $matches);
-                            if (!empty($matches[0])) {
-                                $colabUrl = 'https://colab.research.google.com/drive/' . $matches[0];
-                            }
-                        }
-                    @endphp
-                    <a href="{{ $colabUrl }}" target="_blank" class="attachment-chip" style="background-color: #fff3e0; border-color: #ffe0b2;">
-                        <img src="https://colab.research.google.com/img/colab_favicon_256px.png" style="width:20px;height:20px;border-radius:50%;" alt="Colab">
-                        <span style="font-weight: 500; color: #e65100;">Kerjakan di Google Colab</span>
-                        <i class="fas fa-external-link-alt" style="font-size:11px;color:#fb8c00;"></i>
+                
+                @if($isGoogleForm)
+                    <a href="{{ $tugas->notebook_url }}" target="_blank" class="attachment-chip" style="background-color: #f3e5f5; border-color: #e1bee7;">
+                        <i class="fas fa-file-alt" style="color:#8e24aa;font-size:20px;"></i>
+                        <span style="font-weight: 500; color: #6a1b9a;">Kerjakan Google Form (Kuis)</span>
+                        <i class="fas fa-external-link-alt" style="font-size:11px;color:#ab47bc;"></i>
                     </a>
                 @endif
             </div>
@@ -179,7 +175,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0" style="font-size: 20px;">Tugas Anda</h5>
                         @php
-                            $isDone = $submission && $submission->file;
+                            $isDone = $submission && ($submission->file || $submission->link);
                             $isLate = $tugas->deadline && \Carbon\Carbon::parse($tugas->deadline)->isPast();
                         @endphp
                         @if($isDone)
@@ -194,6 +190,7 @@
                     @if($isDone)
                         {{-- File yang sudah dikumpulkan --}}
                         <div class="mb-3">
+                            @if($submission->file)
                             <a href="{{ asset('storage/'.$submission->file) }}" target="_blank" class="attachment-chip w-100 mb-2 justify-content-between">
                                 <div class="d-flex align-items-center gap-2" style="overflow: hidden;">
                                     <i class="fas fa-file-pdf text-danger" style="font-size:20px;"></i>
@@ -201,6 +198,17 @@
                                 </div>
                                 <i class="fas fa-external-link-alt text-muted small"></i>
                             </a>
+                            @endif
+                            @if($submission->link)
+                            <a href="{{ $submission->link }}" target="_blank" class="attachment-chip w-100 mb-2 justify-content-between" style="background-color: #fff3e0; border-color: #ffe0b2;">
+                                <div class="d-flex align-items-center gap-2" style="overflow: hidden;">
+                                    <img src="https://colab.research.google.com/img/colab_favicon_256px.png" style="width:20px;height:20px;border-radius:50%;" alt="Colab">
+                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e65100;">Tugas Colab / Drive</span>
+                                </div>
+                                <i class="fas fa-external-link-alt text-muted small"></i>
+                            </a>
+                            @endif
+
                             @if($submission->score !== null)
                                 <div class="mt-3 p-3 bg-light rounded text-center">
                                     <div class="small text-muted mb-1">Nilai Anda</div>
@@ -219,27 +227,120 @@
                         {{-- Form Pengumpulan --}}
                         @if($tugas->notebook_url)
                         <div class="alert alert-info p-3 mb-3" style="font-size: 13px; border-radius: 8px;">
-                            <strong>Tugas Colab:</strong> Setelah selesai mengerjakan di Colab, pilih menu <strong>File > Print > Save as PDF</strong>, lalu kumpulkan file PDF tersebut di bawah ini.
+                            <strong>Tugas Colab:</strong> Anda bisa mengklik tombol di bawah untuk melampirkan file Colab (.ipynb) langsung dari Google Drive Anda.
                         </div>
                         @endif
 
-                        <form action="{{ route('mahasiswa.kelas.tugas.submit', [$mataKuliah->id, $tugas->id]) }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('mahasiswa.kelas.tugas.submit', [$mataKuliah->id, $tugas->id]) }}" method="POST" enctype="multipart/form-data" id="submitTugasForm">
                             @csrf
                             <div class="mb-3">
-                                <input type="file" name="file" id="submissionFile" class="d-none" required onchange="document.getElementById('fileName').innerText = this.files[0].name">
-                                <button type="button" class="btn btn-outline-primary w-100 mb-3" style="border-radius: 4px; font-weight: 500;" onclick="document.getElementById('submissionFile').click()">
-                                    <i class="fas fa-plus mr-2"></i> Tambah atau buat
+                                <input type="file" name="file" id="submissionFile" class="d-none" onchange="document.getElementById('fileName').innerText = this.files[0].name; document.getElementById('linkName').innerText = ''; document.getElementById('submissionLink').value = '';">
+                                <input type="hidden" name="link" id="submissionLink">
+                                
+                                <button type="button" class="btn btn-outline-primary w-100 mb-2" style="border-radius: 4px; font-weight: 500;" onclick="document.getElementById('submissionFile').click()">
+                                    <i class="fas fa-upload mr-2"></i> Upload File Lokal
                                 </button>
-                                <div id="fileName" class="text-center small text-muted mb-3" style="word-break: break-all;"></div>
+                                
+                                <a href="https://colab.research.google.com/#create=true" target="_blank" class="btn w-100 mb-2" style="border-radius: 4px; font-weight: 500; background-color: #fff; border: 1px solid #dadce0; color: #3c4043; display: flex; justify-content: center; align-items: center;">
+                                    <img src="https://colab.research.google.com/img/colab_favicon_256px.png" style="width: 18px; margin-right: 8px;" alt="Colab">
+                                    Buat Colab Baru
+                                </a>
+                                
+                                <button type="button" class="btn w-100 mb-3" style="border-radius: 4px; font-weight: 500; background-color: #fff; border: 1px solid #dadce0; color: #3c4043; display: flex; justify-content: center; align-items: center;" onclick="loadPicker()">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" style="width: 18px; margin-right: 8px;" alt="Drive">
+                                    Pilih dari Drive
+                                </button>
+                                
+                                <div id="fileName" class="text-center small text-muted mb-2" style="word-break: break-all;"></div>
+                                <div id="linkName" class="text-center small mb-2" style="word-break: break-all; color: #1a73e8; font-weight: 500;"></div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100" style="border-radius: 4px; font-weight: 500;">
+                            <button type="button" onclick="submitFormIfValid()" class="btn btn-primary w-100" style="border-radius: 4px; font-weight: 500;">
                                 Serahkan
                             </button>
                         </form>
+                        
+                        <script>
+                            function submitFormIfValid() {
+                                if (document.getElementById('submissionFile').files.length > 0 || document.getElementById('submissionLink').value !== '') {
+                                    document.getElementById('submitTugasForm').submit();
+                                } else {
+                                    alert('Silakan pilih file atau lampirkan dari Drive terlebih dahulu.');
+                                }
+                            }
+                        </script>
                     @endif
                 </div>
             @endif
         </div>
     </div>
 </div>
+@if(!$isTeacher)
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+<script>
+    const CLIENT_ID = '{{ config("services.google.client_id") }}';
+    const API_KEY = '{{ config("services.google.api_key") }}';
+    let tokenClient;
+    let accessToken = null;
+    let pickerInited = false;
+    let gisInited = false;
+
+    function gapiLoaded() {
+        gapi.load('picker', {callback: onPickerApiLoad});
+    }
+    function onPickerApiLoad() {
+        pickerInited = true;
+    }
+    function gisLoaded() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/drive.readonly',
+            callback: '', // set later
+        });
+        gisInited = true;
+    }
+
+    function loadPicker() {
+        if (!pickerInited || !gisInited) {
+            alert('Sedang memuat Google API. Silakan klik lagi dalam beberapa detik.');
+            return;
+        }
+        tokenClient.callback = async (response) => {
+            if (response.error !== undefined) {
+                console.error(response);
+                return;
+            }
+            accessToken = response.access_token;
+            createPicker();
+        };
+
+        if (accessToken === null) {
+            tokenClient.requestAccessToken({prompt: '', login_hint: '{{ Auth::user()->email }}'});
+        } else {
+            tokenClient.requestAccessToken({prompt: '', login_hint: '{{ Auth::user()->email }}'});
+        }
+    }
+
+    function createPicker() {
+        const view = new google.picker.DocsView(google.picker.ViewId.DOCS);
+        const picker = new google.picker.PickerBuilder()
+            .addView(view)
+            .setOAuthToken(accessToken)
+            .setDeveloperKey(API_KEY)
+            .setCallback(pickerCallback)
+            .build();
+        picker.setVisible(true);
+    }
+
+    function pickerCallback(data) {
+        if (data.action === google.picker.Action.PICKED) {
+            const doc = data.docs[0];
+            document.getElementById('submissionLink').value = doc.url;
+            document.getElementById('linkName').innerText = 'Lampiran Drive: ' + doc.name;
+            document.getElementById('submissionFile').value = '';
+            document.getElementById('fileName').innerText = '';
+        }
+    }
+</script>
+@endif
 @endsection

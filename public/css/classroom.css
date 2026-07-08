@@ -377,3 +377,13 @@ h1, h2, h3, h4, h5, h6, .google-sans {
   color: white;
   text-decoration: none;
 }
+
+/* ==========================================================================
+   Google API Fixes
+   ========================================================================== */
+.picker-dialog-bg {
+  z-index: 999990 !important;
+}
+.picker-dialog {
+  z-index: 999991 !important;
+}

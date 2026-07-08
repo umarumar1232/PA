@@ -18,7 +18,11 @@ class UserController extends Controller
         $query = User::query();
 
         if ($role) {
-            $query->where('role', $role);
+            if ($role === 'dosen') {
+                $query->whereIn('role', ['dosen', 'ilb']);
+            } else {
+                $query->where('role', $role);
+            }
         }
 
         $users = $query->latest()->get();
@@ -49,13 +53,13 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'role' => 'required'
         ]);
 
         $user = User::create([
-            'nama' => $request->name,
+            'nama' => $request->nama,
             'email' => $request->email,
             'password' => bcrypt(Str::random(16)), // password sementara random
             'role' => $request->role,
@@ -77,18 +81,18 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role'  => 'required|in:admin,mahasiswa',
+            'nama'  => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
+            'role'  => 'required|in:mahasiswa,dosen,ilb,admin',
         ]);
 
         // Cegah admin mengubah role dirinya sendiri
-        if ($user->id === auth()->id() && $request->role !== 'admin') {
+        if ($user->user_id === auth()->id() && !in_array($request->role, ['admin', 'dosen', 'ilb'])) {
             return back()->with('error', 'Kamu tidak bisa mengubah role akun sendiri.');
         }
 
         $user->update([
-            'nama'  => $request->name,
+            'nama'  => $request->nama,
             'email' => $request->email,
             'role'  => $request->role,
         ]);

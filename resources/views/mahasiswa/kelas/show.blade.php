@@ -715,11 +715,14 @@
           </div>
 
           <div class="gc-md-input-group mb-2">
-            <input type="url" name="notebook_url" placeholder=" " autocomplete="off">
-            <label>Link Google Drive (Opsional)</label>
+            <input type="url" name="notebook_url" id="quiz_form_url" placeholder=" " autocomplete="off">
+            <label>Link Google Form / Kuis</label>
           </div>
-          <small class="form-text text-muted mb-4 px-2" style="margin-top: -8px;">Masukkan *link* Google Drive file (.ipynb). Pastikan aksesnya di-set ke <strong>Viewer (Read-Only)</strong> agar template aman.</small>
-
+          <div class="mb-4 text-right">
+              <button type="button" class="btn btn-outline-primary btn-sm" id="btnCreateForm" onclick="createBlankForm()">
+                  <i class="fas fa-file-alt mr-1"></i> Buat Blank Quiz (Google Form)
+              </button>
+          </div>
           <div class="form-group mb-4">
               <label class="text-muted small font-weight-bold mb-1">Lampiran File Kuis (Opsional)</label>
               <div class="custom-file">
@@ -1100,4 +1103,83 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+@if($isTeacher)
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisFormsLoaded()"></script>
+<script>
+    const FORMS_CLIENT_ID = '{{ config("services.google.client_id") }}';
+    let formsTokenClient;
+    let formsAccessToken = null;
+
+    function gisFormsLoaded() {
+        formsTokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: FORMS_CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/forms.body https://www.googleapis.com/auth/drive.file',
+            callback: '', // set later
+        });
+    }
+
+    function createBlankForm() {
+        if (!formsTokenClient) {
+            alert('Sedang memuat Google API. Silakan coba lagi.');
+            return;
+        }
+
+        const titleInput = document.getElementById('quiz_title_input').value;
+        const formTitle = titleInput ? titleInput : 'Kuis Baru';
+
+        document.getElementById('btnCreateForm').innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Membuat...';
+        document.getElementById('btnCreateForm').disabled = true;
+
+        formsTokenClient.callback = async (response) => {
+            if (response.error !== undefined) {
+                console.error(response);
+                resetBtn();
+                return;
+            }
+            formsAccessToken = response.access_token;
+            
+            try {
+                const res = await fetch('https://forms.googleapis.com/v1/forms', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + formsAccessToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        info: {
+                            title: formTitle,
+                            documentTitle: formTitle
+                        }
+                    })
+                });
+                
+                const data = await res.json();
+                if (data.responderUri) {
+                    document.getElementById('quiz_form_url').value = data.responderUri;
+                    document.getElementById('quiz_form_url').focus();
+                    alert('Google Form berhasil dibuat!');
+                } else {
+                    alert('Gagal membuat Form. Silakan cek console.');
+                    console.error(data);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan jaringan.');
+            }
+            resetBtn();
+        };
+
+        if (formsAccessToken === null) {
+            formsTokenClient.requestAccessToken({prompt: '', login_hint: '{{ Auth::user()->email }}'});
+        } else {
+            formsTokenClient.requestAccessToken({prompt: '', login_hint: '{{ Auth::user()->email }}'});
+        }
+    }
+
+    function resetBtn() {
+        document.getElementById('btnCreateForm').innerHTML = '<i class="fas fa-file-alt mr-1"></i> Buat Blank Quiz (Google Form)';
+        document.getElementById('btnCreateForm').disabled = false;
+    }
+</script>
+@endif
 @endsection

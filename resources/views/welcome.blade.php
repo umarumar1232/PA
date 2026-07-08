@@ -125,7 +125,7 @@
         @if (Route::has('login'))
             <div class="nav-links">
                 @auth
-                    @if(Auth::user()->role === 'admin')
+                    @if(in_array(Auth::user()->role, ['admin', 'dosen', 'ilb']))
                         <a href="{{ url('/admin/dashboard') }}" class="btn btn-primary">Dashboard</a>
                     @else
                         <a href="{{ url('/mahasiswa/dashboard') }}" class="btn btn-primary">Dashboard</a>

@@ -10,6 +10,7 @@ class Submission extends Model
         'assignment_id',
         'user_id',
         'file',
+        'link',
         'score',
         'status',
     ];

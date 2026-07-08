@@ -23,7 +23,7 @@
                 @php
                     $sub = $submissions[$mhs->user_id] ?? null;
                     $isActive = request('student_id') == $mhs->user_id;
-                    $hasFile = $sub && $sub->file;
+                    $hasFile = $sub && ($sub->file || $sub->link);
                 @endphp
                 <a href="{{ route('admin.tugas_mahasiswa.show', $assignment->id) }}?student_id={{ $mhs->user_id }}" 
                    class="d-flex align-items-center" 
@@ -67,20 +67,36 @@
             <div class="d-flex align-items-center justify-content-center" style="flex: 1; color: #80868b;">
                 Pilih mahasiswa dari daftar di sebelah kiri.
             </div>
-        @elseif($activeSubmission && $activeSubmission->file)
+        @elseif($activeSubmission && ($activeSubmission->file || $activeSubmission->link))
             
             <div style="flex: 1; display: flex;">
-                {{-- Area PDF --}}
+                {{-- Area PDF atau Link --}}
                 <div style="flex: 1; padding: 16px; background-color: #525659; display: flex; flex-direction: column;">
-                    <div class="mb-2 text-white d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="fas fa-file-pdf mr-2"></i> File Pekerjaan Mahasiswa
+                    @if($activeSubmission->file)
+                        <div class="mb-2 text-white d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-file-pdf mr-2"></i> File Pekerjaan Mahasiswa
+                            </div>
+                            <a href="{{ asset('storage/' . $activeSubmission->file) }}" target="_blank" class="btn btn-sm btn-outline-light" style="border-radius: 20px;">
+                                Buka di Tab Baru <i class="fas fa-external-link-alt ml-1"></i>
+                            </a>
                         </div>
-                        <a href="{{ asset('storage/' . $activeSubmission->file) }}" target="_blank" class="btn btn-sm btn-outline-light" style="border-radius: 20px;">
-                            Buka di Tab Baru <i class="fas fa-external-link-alt ml-1"></i>
-                        </a>
-                    </div>
-                    <iframe src="{{ asset('storage/' . $activeSubmission->file) }}" style="width: 100%; height: 100%; border: none; border-radius: 8px; background: white;"></iframe>
+                        <iframe src="{{ asset('storage/' . $activeSubmission->file) }}" style="width: 100%; height: 100%; border: none; border-radius: 8px; background: white;"></iframe>
+                    @else
+                        <div class="mb-2 text-white d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-link mr-2"></i> Link Pekerjaan Mahasiswa
+                            </div>
+                        </div>
+                        <div style="width: 100%; height: 100%; border: none; border-radius: 8px; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" style="width: 64px; margin-bottom: 24px;" alt="Drive">
+                            <h4 class="font-weight-normal text-dark mb-2">Pekerjaan Dikumpulkan via Link</h4>
+                            <p class="text-muted small mb-4">Mahasiswa melampirkan Google Drive atau Colab Link.</p>
+                            <a href="{{ $activeSubmission->link }}" target="_blank" class="btn btn-primary px-4 py-2" style="border-radius: 24px;">
+                                <i class="fas fa-external-link-alt mr-2"></i> Buka Pekerjaan di Tab Baru
+                            </a>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Area Penilaian (Panel Kanan Kecil) --}}

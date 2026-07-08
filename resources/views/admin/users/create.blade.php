@@ -9,7 +9,7 @@
 
     <div class="mb-3">
         <label>Nama</label>
-        <input type="text" name="name" class="form-control">
+        <input type="text" name="nama" class="form-control">
     </div>
 
     <div class="mb-3">
@@ -20,7 +20,8 @@
     <div class="mb-3">
         <label>Role</label>
         <select name="role" class="form-control">
-            <option value="admin">Admin/Dosen</option>
+            <option value="mahasiswa">Mahasiswa</option>
+            <option value="dosen">Dosen / ILB</option>
         </select>
     </div>
 

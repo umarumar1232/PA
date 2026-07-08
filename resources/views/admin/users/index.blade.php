@@ -10,7 +10,7 @@
         <form method="GET" class="m-0">
             <select name="role" onchange="this.form.submit()" class="form-control form-control-sm" style="border-radius: 20px; padding: 4px 16px;">
                 <option value="">Semua Role</option>
-                <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin / Dosen</option>
+                <option value="dosen" {{ request('role') == 'dosen' ? 'selected' : '' }}>Dosen / ILB</option>
                 <option value="mahasiswa" {{ request('role') == 'mahasiswa' ? 'selected' : '' }}>Mahasiswa</option>
             </select>
         </form>
@@ -40,8 +40,8 @@
                         </td>
                         <td class="text-muted">{{ $user->email }}</td>
                         <td>
-                            <span class="badge badge-pill {{ $user->role == 'admin' ? 'badge-primary' : 'badge-success' }} px-3 py-1 font-weight-normal" style="font-size: 12px;">
-                                {{ ucfirst($user->role) }}
+                            <span class="badge badge-pill {{ $user->role == 'admin' ? 'badge-primary' : (in_array($user->role, ['dosen', 'ilb']) ? 'badge-info' : 'badge-success') }} px-3 py-1 font-weight-normal" style="font-size: 12px; {{ in_array($user->role, ['dosen', 'ilb']) ? 'color: #fff;' : '' }}">
+                                {{ strtoupper($user->role) == 'ILB' ? 'ILB' : ucfirst($user->role) }}
                             </span>
                         </td>
                         <td class="text-right">

@@ -15,7 +15,7 @@ class AdminMiddleware
      */
     public function handle($request, \Closure $next)
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
+        if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'dosen', 'ilb'])) {
             abort(403, 'Akses ditolak');
         }
 

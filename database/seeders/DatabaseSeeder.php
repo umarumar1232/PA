@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             [
                 'nama' => 'Admin Dosen',
                 'password' => Hash::make('password'),
-                'role' => 'admin'
+                'role' => 'dosen'
             ]
         );
         DB::table('kelas_pengajar')->insertOrIgnore([

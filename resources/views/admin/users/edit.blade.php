@@ -4,14 +4,14 @@
 
 <h4>Edit User</h4>
 
-<form action="{{ route('admin.users.update', $user->id) }}" method="POST">
+<form action="{{ route('admin.users.update', $user->user_id) }}" method="POST">
     @csrf
     @method('PUT')
 
     <div class="mb-3">
         <label>Nama</label>
-        <input type="text" name="name"
-               value="{{ $user->name }}"
+        <input type="text" name="nama"
+               value="{{ $user->nama }}"
                class="form-control">
     </div>
 
@@ -22,15 +22,15 @@
                class="form-control">
     </div>
 
-    @if ($user->id !== auth()->id())
+    @if ($user->user_id !== auth()->id())
         <div class="mb-3">
             <label>Role</label>
             <select name="role" class="form-control">
                 <option value="mahasiswa" {{ $user->role == 'mahasiswa' ? 'selected' : '' }}>
                     Mahasiswa
                 </option>
-                <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>
-                    Admin
+                <option value="dosen" {{ in_array($user->role, ['dosen', 'ilb', 'admin']) ? 'selected' : '' }}>
+                    Dosen / ILB
                 </option>
             </select>
         </div>
