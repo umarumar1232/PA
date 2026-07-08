@@ -13,6 +13,11 @@ class Submission extends Model
         'link',
         'score',
         'status',
+        'submitted_at',
+    ];
+
+    protected $casts = [
+        'submitted_at' => 'datetime',
     ];
     public function assignment()
     {

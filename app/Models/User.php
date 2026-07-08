@@ -50,10 +50,7 @@ class User extends Authenticatable
         ];
     }
     
-    public function classesCreated()
-    {
-        return $this->hasMany(ClassModel::class, 'created_by');
-    }
+
     // Relasi ke Submission
     public function submissions()
     {

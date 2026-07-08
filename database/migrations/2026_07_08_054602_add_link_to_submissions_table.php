@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('submissions', function (Blueprint $table) {
-            $table->string('link')->nullable()->after('file');
-        });
+        if (!Schema::hasColumn('submissions', 'link')) {
+            Schema::table('submissions', function (Blueprint $table) {
+                $table->string('link')->nullable()->after('file');
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('submissions', function (Blueprint $table) {
-            $table->dropColumn('link');
-        });
+        if (Schema::hasColumn('submissions', 'link')) {
+            Schema::table('submissions', function (Blueprint $table) {
+                $table->dropColumn('link');
+            });
+        }
     }
 };

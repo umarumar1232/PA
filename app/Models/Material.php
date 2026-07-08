@@ -28,14 +28,7 @@ class Material extends Model
     {
         return $this->hasMany(Assignment::class, 'material_id');
     }
-    public function students()
-    {
-        return $this->belongsToMany(
-            User::class,
-            'material_id', // foreign key di enrollments untuk material
-            'user_id'   // foreign key di enrollments untuk user
-        );
-    }
+
 
     public function category()
     {

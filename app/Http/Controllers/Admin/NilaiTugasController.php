@@ -57,8 +57,9 @@ class NilaiTugasController extends Controller
      */
     public function show($id)
     {
-        $assignment = Assignment::findOrFail($id);
-        $mahasiswa = User::where('role', 'mahasiswa')->get();
+        $assignment = Assignment::with('material.mataKuliah')->findOrFail($id);
+        $mataKuliah = $assignment->material->mataKuliah ?? null;
+        $mahasiswa = $mataKuliah ? $mataKuliah->enrolledStudents()->get() : collect();
 
         $submissions = Submission::where('assignment_id', $id)
                         ->get()

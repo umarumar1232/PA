@@ -154,14 +154,20 @@
                 {{-- Panel Pengajar --}}
                 <div class="submission-card">
                     <h5 class="mb-4">Status Pengumpulan</h5>
+                    @php
+                        $submittedCount = $allSubmissions->filter(function($sub) {
+                            return !empty($sub->file) || !empty($sub->link);
+                        })->count();
+                        $assignedCount = max(0, $activeStudents->count() - $submittedCount);
+                    @endphp
                     <div class="d-flex justify-content-around text-center mb-4">
                         <div>
-                            <div style="font-size: 32px; font-weight: 300;">{{ $allSubmissions->whereNotNull('file')->count() }}</div>
+                            <div style="font-size: 32px; font-weight: 300;">{{ $submittedCount }}</div>
                             <div class="small text-muted">Diserahkan</div>
                         </div>
                         <div style="width: 1px; background: #e0e0e0;"></div>
                         <div>
-                            <div style="font-size: 32px; font-weight: 300;">{{ $activeStudents->count() - $allSubmissions->whereNotNull('file')->count() }}</div>
+                            <div style="font-size: 32px; font-weight: 300;">{{ $assignedCount }}</div>
                             <div class="small text-muted">Diberikan</div>
                         </div>
                     </div>

@@ -15,7 +15,7 @@ class DashboardController extends Controller
     {
         $jumlah_siswa = User::where('role', 'mahasiswa')->count();
         $jumlah_guru = User::where('role', 'admin')->count();
-        $jumlah_kelas = Material::count();
+        $jumlah_kelas = MataKuliah::count();
         $jumlah_mapel = Assignment::count();
         $jumlah_user = User::count();
 
@@ -78,7 +78,31 @@ class DashboardController extends Controller
     public function destroyKelas($id)
     {
         $kelas = MataKuliah::findOrFail($id);
-        $kelas->materials()->delete();
+        
+        foreach ($kelas->materials as $material) {
+            foreach ($material->assignments as $assignment) {
+                // Hapus pengumpulan tugas beserta filenya
+                foreach ($assignment->submissions as $submission) {
+                    if ($submission->file && \Illuminate\Support\Facades\Storage::disk('public')->exists($submission->file)) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($submission->file);
+                    }
+                    $submission->delete();
+                }
+                
+                // Hapus file lampiran tugas
+                if ($assignment->file && \Illuminate\Support\Facades\Storage::disk('public')->exists($assignment->file)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($assignment->file);
+                }
+                $assignment->delete();
+            }
+            
+            // Hapus file lampiran materi
+            if ($material->file && \Illuminate\Support\Facades\Storage::disk('public')->exists($material->file)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($material->file);
+            }
+            $material->delete();
+        }
+        
         $kelas->delete();
 
         return redirect()->back()->with('success', 'Kelas berhasil dihapus');

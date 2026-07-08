@@ -1114,13 +1114,18 @@ $(document).ready(function() {
         formsTokenClient = google.accounts.oauth2.initTokenClient({
             client_id: FORMS_CLIENT_ID,
             scope: 'https://www.googleapis.com/auth/forms.body https://www.googleapis.com/auth/drive.file',
-            callback: '', // set later
+            callback: '',
         });
+        console.log('[GIS] formsTokenClient initialized, CLIENT_ID:', FORMS_CLIENT_ID ? 'OK' : 'KOSONG!');
     }
 
     function createBlankForm() {
         if (!formsTokenClient) {
-            alert('Sedang memuat Google API. Silakan coba lagi.');
+            alert('Google API belum selesai dimuat. Tunggu sebentar lalu coba lagi.');
+            return;
+        }
+        if (!FORMS_CLIENT_ID) {
+            alert('Konfigurasi Google Client ID tidak ditemukan. Periksa file .env');
             return;
         }
 
@@ -1130,14 +1135,24 @@ $(document).ready(function() {
         document.getElementById('btnCreateForm').innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Membuat...';
         document.getElementById('btnCreateForm').disabled = true;
 
+        // Sembunyikan link lama jika ada
+        const oldLink = document.getElementById('form_open_link_container');
+        if (oldLink) oldLink.remove();
+
         formsTokenClient.callback = async (response) => {
+            console.log('[GIS] Callback dipanggil:', response);
+
             if (response.error !== undefined) {
-                console.error(response);
+                console.error('[GIS] OAuth Error:', response);
+                alert('Gagal autentikasi Google:\n' + (response.error_description || response.error) +
+                      '\n\nPastikan Anda login dengan akun Google yang terdaftar.');
                 resetBtn();
                 return;
             }
+
             formsAccessToken = response.access_token;
-            
+            console.log('[GIS] Token didapat, membuat form...');
+
             try {
                 const res = await fetch('https://forms.googleapis.com/v1/forms', {
                     method: 'POST',
@@ -1152,28 +1167,45 @@ $(document).ready(function() {
                         }
                     })
                 });
-                
+
                 const data = await res.json();
-                if (data.responderUri) {
+                console.log('[Forms API] Response:', data);
+
+                if (data.formId) {
+                    const formEditUrl = 'https://docs.google.com/forms/d/' + data.formId + '/edit';
                     document.getElementById('quiz_form_url').value = data.responderUri;
-                    document.getElementById('quiz_form_url').focus();
-                    alert('Google Form berhasil dibuat!');
+
+                    // Tampilkan tombol buka editor sebagai fallback
+                    const linkBtn = document.createElement('div');
+                    linkBtn.id = 'form_open_link_container';
+                    linkBtn.style.marginTop = '8px';
+                    linkBtn.innerHTML = `<a href="${formEditUrl}" target="_blank" class="btn btn-success btn-sm">
+                        <i class="fas fa-external-link-alt mr-1"></i> Klik di sini untuk membuka Editor Form
+                    </a>`;
+                    document.getElementById('btnCreateForm').parentNode.appendChild(linkBtn);
+
+                    // Coba buka otomatis
+                    const opened = window.open(formEditUrl, '_blank');
+                    if (!opened) {
+                        console.warn('[window.open] Diblokir popup blocker - gunakan tombol di atas');
+                    }
                 } else {
-                    alert('Gagal membuat Form. Silakan cek console.');
-                    console.error(data);
+                    const errMsg = data.error ? data.error.message : JSON.stringify(data);
+                    alert('Gagal membuat Form:\n' + errMsg);
+                    console.error('[Forms API] Error:', data);
                 }
             } catch (err) {
-                console.error(err);
-                alert('Terjadi kesalahan jaringan.');
+                console.error('[Forms API] Fetch error:', err);
+                alert('Terjadi kesalahan jaringan:\n' + err.message);
             }
             resetBtn();
         };
 
-        if (formsAccessToken === null) {
-            formsTokenClient.requestAccessToken({prompt: '', login_hint: '{{ Auth::user()->email }}'});
-        } else {
-            formsTokenClient.requestAccessToken({prompt: '', login_hint: '{{ Auth::user()->email }}'});
-        }
+        console.log('[GIS] Meminta access token...');
+        formsTokenClient.requestAccessToken({
+            prompt: 'consent',
+            login_hint: '{{ Auth::user()->email }}'
+        });
     }
 
     function resetBtn() {

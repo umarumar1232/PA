@@ -16,6 +16,8 @@ return new class extends Migration
             // DIUBAH: Menambahkan target tabel 'users' dan kolom 'user_id' secara eksplisit
             $table->foreignId('user_id')->constrained('users', 'user_id')->cascadeOnDelete();
 
+            $table->text('link')->nullable();
+            
             $table->string('file')->nullable(); // kalau upload
             $table->integer('score')->nullable(); // nilai
             $table->enum('status', ['belum', 'sudah'])->default('belum');

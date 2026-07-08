@@ -32,9 +32,13 @@ class MataKuliah extends Model
      */
     public function assignments()
     {
-        return Assignment::whereIn(
-            'material_id',
-            $this->materials()->pluck('id')
+        return $this->hasManyThrough(
+            Assignment::class,
+            Material::class,
+            'matakuliah_id', // foreign key di tabel materials
+            'material_id',   // foreign key di tabel assignments
+            'id',            // local key di tabel mata_kuliahs
+            'id'             // local key di tabel materials
         );
     }
 

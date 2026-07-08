@@ -32,7 +32,7 @@ class MataKuliahController extends Controller
             'kode_kelas' => 'required|string|max:255',
         ]);
 
-        $kodeKelas = strtoupper(trim($request->input('kode_kelas')));
+        $kodeKelas = strtolower(trim($request->input('kode_kelas')));
 
         // Find the class by its code (kode_mk)
         $kelas = MataKuliah::where('kode_mk', $kodeKelas)->first();
@@ -67,20 +67,13 @@ class MataKuliahController extends Controller
             'materials.assignments.submissions',
         ])->findOrFail($id);
 
+        $isTeacher = $this->checkEnrollment($mataKuliah);
+
         $categories = \App\Models\Category::with(['materials' => function ($query) use ($id) {
             $query->where('matakuliah_id', $id);
         }, 'materials.assignments'])->get();
 
         $user = Auth::user();
-
-        // Cek apakah user adalah pengajar kelas ini yang sudah accepted
-        $isTeacher = false;
-        if ($user->role === 'admin' || $user->role === 'dosen') {
-            $isTeacher = $mataKuliah->teachers()
-                ->where('users.user_id', $user->user_id)
-                ->wherePivot('status', 'accepted')
-                ->exists();
-        }
 
         // Semua tugas dalam kelas ini
         $materialIds = $mataKuliah->materials->pluck('id');
@@ -155,16 +148,12 @@ class MataKuliahController extends Controller
     public function showMateri($kelasId, $id)
     {
         $mataKuliah = MataKuliah::with(['materials.category', 'materials.assignments'])->findOrFail($kelasId);
+        
+        $isTeacher = $this->checkEnrollment($mataKuliah);
+
         $material   = \App\Models\Material::with(['category', 'assignments.submissions'])->findOrFail($id);
 
         $user       = Auth::user();
-        $isTeacher  = false;
-        if ($user->role === 'admin' || $user->role === 'dosen') {
-            $isTeacher = $mataKuliah->teachers()
-                ->where('users.user_id', $user->user_id)
-                ->wherePivot('status', 'accepted')
-                ->exists();
-        }
 
         $activeTeachers = $mataKuliah->teachers()->wherePivot('status', 'accepted')->get();
 
@@ -177,16 +166,12 @@ class MataKuliahController extends Controller
     public function showTugas($kelasId, $id)
     {
         $mataKuliah = MataKuliah::with(['materials.category'])->findOrFail($kelasId);
+
+        $isTeacher = $this->checkEnrollment($mataKuliah);
+
         $tugas      = Assignment::with(['material.category', 'submissions'])->findOrFail($id);
 
         $user       = Auth::user();
-        $isTeacher  = false;
-        if ($user->role === 'admin' || $user->role === 'dosen') {
-            $isTeacher = $mataKuliah->teachers()
-                ->where('users.user_id', $user->user_id)
-                ->wherePivot('status', 'accepted')
-                ->exists();
-        }
 
         $submission     = Submission::where('assignment_id', $id)->where('user_id', $user->user_id)->first();
         $allSubmissions = $isTeacher ? Submission::with('user')->where('assignment_id', $id)->get() : collect();
@@ -203,6 +188,9 @@ class MataKuliahController extends Controller
      */
     public function submitTugas(\Illuminate\Http\Request $request, $kelasId, $id)
     {
+        $mataKuliah = MataKuliah::findOrFail($kelasId);
+        $this->checkEnrollment($mataKuliah);
+
         if ($request->has('unsubmit')) {
             $user = Auth::user();
             $sub = Submission::where('assignment_id', $id)->where('user_id', $user->user_id)->first();
@@ -238,5 +226,34 @@ class MataKuliahController extends Controller
 
         return redirect()->route('mahasiswa.kelas.tugas.show', [$kelasId, $id])
             ->with('success', 'Tugas berhasil dikumpulkan!');
+    }
+
+    /**
+     * Cek otorisasi enrollment user di kelas ini
+     */
+    private function checkEnrollment($mataKuliah)
+    {
+        $user = Auth::user();
+        
+        $isTeacher = false;
+        if ($user->role === 'admin' || $user->role === 'dosen') {
+            $isTeacher = $mataKuliah->teachers()
+                ->where('users.user_id', $user->user_id)
+                ->wherePivot('status', 'accepted')
+                ->exists();
+        }
+
+        $isStudent = false;
+        if ($user->role === 'mahasiswa') {
+            $isStudent = $user->enrolledClasses()
+                ->where('mata_kuliahs.id', $mataKuliah->id)
+                ->exists();
+        }
+
+        if (!$isTeacher && !$isStudent) {
+            abort(403, 'Anda tidak terdaftar di kelas ini.');
+        }
+
+        return $isTeacher;
     }
 }
