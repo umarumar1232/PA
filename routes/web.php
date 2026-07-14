@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AssignmentController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\TugasMahasiswaController;
@@ -102,6 +103,7 @@ Route::middleware(['auth', 'admin'])
         Route::resource('materials', MaterialController::class);
         Route::resource('users', UserController::class);
         Route::resource('assignments', AssignmentController::class);
+        Route::resource('categories', CategoryController::class);
 
         
 });

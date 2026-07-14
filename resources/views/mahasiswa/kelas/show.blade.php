@@ -324,6 +324,8 @@
                         <i class="fas fa-plus mr-2" style="font-size: 16px;"></i> Buat
                     </button>
                     <div class="dropdown-menu mt-2 shadow-sm" aria-labelledby="dropdownCreate" style="border-radius: 8px; border: 1px solid #e0e0e0;">
+                        <a class="dropdown-item py-2" href="#" data-toggle="modal" data-target="#createCategoryModal"><i class="fas fa-folder-plus mr-2 text-info"></i> Pertemuan / Kategori Baru</a>
+                        <div class="dropdown-divider"></div>
                         <a class="dropdown-item py-2" href="#" data-toggle="modal" data-target="#createMaterialModal"><i class="fas fa-book-open mr-2 text-primary"></i> Materi</a>
                         @if($mataKuliah->materials->isEmpty())
                             <a class="dropdown-item py-2 disabled text-muted" href="#" title="Harap buat materi terlebih dahulu"><i class="fas fa-clipboard-list mr-2"></i> Tugas (Buat materi dulu)</a>
@@ -783,6 +785,31 @@
         <div class="modal-footer gc-modal-footer">
           <button type="button" class="gc-modal-btn gc-modal-btn-cancel" data-dismiss="modal">Batal</button>
           <button type="submit" class="gc-modal-btn gc-modal-btn-submit active">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Create Category Modal -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="createCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+    <div class="modal-content gc-modal-content">
+      <form action="{{ route('admin.categories.store') }}" method="POST">
+        @csrf
+        <div class="modal-header gc-modal-header">
+          <h5 class="modal-title gc-modal-title" id="createCategoryModalLabel">Buat Pertemuan / Kategori Baru</h5>
+        </div>
+        <div class="modal-body gc-modal-body text-left">
+          <p class="small text-muted mb-4">Tambahkan kategori atau pertemuan baru (misalnya: <strong>Pertemuan 6</strong>, <strong>UTS</strong>, atau <strong>UAS</strong>).</p>
+          <div class="gc-md-input-group mb-4">
+            <input type="text" name="name" placeholder=" " required autocomplete="off">
+            <label>Nama Pertemuan / Kategori*</label>
+          </div>
+        </div>
+        <div class="modal-footer gc-modal-footer">
+          <button type="button" class="gc-modal-btn gc-modal-btn-cancel" data-dismiss="modal">Batal</button>
+          <button type="submit" class="gc-modal-btn gc-modal-btn-submit active">Buat</button>
         </div>
       </form>
     </div>

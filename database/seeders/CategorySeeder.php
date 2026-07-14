@@ -31,8 +31,6 @@ class CategorySeeder extends Seeder
             ['name' => 'UAS'],
         ];
 
-        foreach ($data as $item) {
-            \App\Models\Category::insert($data);
-        }
+        \App\Models\Category::insert($data);
     }
 }
