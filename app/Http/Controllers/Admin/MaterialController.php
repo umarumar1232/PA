@@ -79,7 +79,7 @@ class MaterialController extends Controller
             'matakuliah_id' => $request->matakuliah_id ?? null,
         ]);
 
-    return redirect()->route('admin.materials.index')
+        return redirect()->back()
             ->with('success', 'Materi berhasil ditambahkan');
     }
 
@@ -129,7 +129,7 @@ class MaterialController extends Controller
 
         $material->save();
 
-        return redirect()->route('admin.materials.index')
+        return redirect()->back()
             ->with('success', 'Materi berhasil diperbarui');
     }
 
@@ -137,7 +137,7 @@ class MaterialController extends Controller
     {
         $material->delete();
 
-        return redirect()->route('admin.materials.index')
+        return redirect()->back()
             ->with('success', 'Materi berhasil dihapus');
     }
 }

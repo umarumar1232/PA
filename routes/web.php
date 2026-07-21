@@ -30,6 +30,7 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/home', [MataKuliahController::class, 'index'])->name('mahasiswa.home');
+    Route::get('/mahasiswa/tugas', [MataKuliahController::class, 'daftarTugas'])->name('mahasiswa.tugas.index');
     Route::get('/mahasiswa/kelas/{id}', [MataKuliahController::class, 'show'])->name('mahasiswa.kelas.show');
     Route::post('/mahasiswa/kelas/join', [MataKuliahController::class, 'join'])->name('mahasiswa.kelas.join');
     Route::post('/mahasiswa/kelas/invitation/{id}/accept', [MataKuliahController::class, 'acceptStudentInvitation'])->name('mahasiswa.kelas.invitation.accept');

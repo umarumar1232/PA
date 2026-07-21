@@ -287,4 +287,27 @@ class MataKuliahController extends Controller
 
         return $isTeacher;
     }
+    /**
+     * Tampilkan daftar tugas untuk semua kelas yang diikuti mahasiswa
+     */
+    public function daftarTugas()
+    {
+        $user = Auth::user();
+        
+        // Ambil ID kelas yang diikuti (status accepted)
+        $kelasIds = $user->enrolledClasses()->pluck('mata_kuliahs.id');
+
+        // Ambil semua materi di kelas-kelas tersebut
+        $materialIds = \App\Models\Material::whereIn('matakuliah_id', $kelasIds)->pluck('id');
+
+        // Ambil semua tugas yang ada di materi-materi tersebut
+        $assignments = \App\Models\Assignment::whereIn('material_id', $materialIds)
+            ->with(['material.mataKuliah', 'submissions' => function($q) use ($user) {
+                $q->where('user_id', $user->user_id);
+            }])
+            ->orderBy('deadline', 'asc')
+            ->get();
+
+        return view('mahasiswa.tugas.index', compact('assignments'));
+    }
 }

@@ -54,9 +54,17 @@
                         <td>
                             <div class="d-flex flex-column gap-2">
                                 @if($material->file)
-                                    <a href="{{ asset('storage/'.$material->file) }}" target="_blank" class="badge badge-pill badge-light border mb-1" title="Lihat File">
-                                        <i class="fas fa-file-alt text-primary mr-1"></i> File
-                                    </a>
+                                    @if(is_array($material->file))
+                                        @foreach($material->file as $f)
+                                            <a href="{{ asset('storage/'.$f['path']) }}" target="_blank" class="badge badge-pill badge-light border mb-1" title="Lihat File">
+                                                <i class="fas fa-file-alt text-primary mr-1"></i> File
+                                            </a>
+                                        @endforeach
+                                    @else
+                                        <a href="{{ asset('storage/'.$material->file) }}" target="_blank" class="badge badge-pill badge-light border mb-1" title="Lihat File">
+                                            <i class="fas fa-file-alt text-primary mr-1"></i> File
+                                        </a>
+                                    @endif
                                 @endif
                                 @if($material->video_url)
                                     <a href="{{ $material->video_url }}" target="_blank" class="badge badge-pill badge-light border" title="Lihat Video">

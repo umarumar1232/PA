@@ -98,7 +98,7 @@
         <div class="gc-nav-divider"></div>
 
         {{-- Daftar tugas --}}
-        <a href="#" class="gc-nav-item text-muted">
+        <a href="{{ route('mahasiswa.tugas.index') }}" class="gc-nav-item {{ request()->routeIs('mahasiswa.tugas.index') ? 'active' : '' }}">
           <i class="fas fa-list-check" style="font-size: 18px;"></i> Daftar tugas
         </a>
 

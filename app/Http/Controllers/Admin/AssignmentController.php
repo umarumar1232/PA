@@ -16,9 +16,20 @@ class AssignmentController extends Controller
         $sort = $request->get('sort', 'id');
         $direction = $request->get('direction', 'asc');
 
-        $assignments = Assignment::with('material')
-            ->orderBy($sort, $direction)
-            ->get();
+        $query = Assignment::with('material')
+            ->orderBy($sort, $direction);
+
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user && $user->role === 'dosen') {
+            $query->whereHas('material', function($q) use ($user) {
+                $q->where('created_by', $user->user_id)
+                  ->orWhereHas('mataKuliah.teachers', function($q2) use ($user) {
+                      $q2->where('users.user_id', $user->user_id);
+                  });
+            });
+        }
+
+        $assignments = $query->get();
 
         return view('admin.assignments.index', compact(
             'assignments',
@@ -30,7 +41,19 @@ class AssignmentController extends Controller
     // data untuk datatables AJAX
     public function data()
     {
-        $assignments = Assignment::with('material')->select('assignments.*');
+        $query = Assignment::with('material')->select('assignments.*');
+        
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user && $user->role === 'dosen') {
+            $query->whereHas('material', function($q) use ($user) {
+                $q->where('created_by', $user->user_id)
+                  ->orWhereHas('mataKuliah.teachers', function($q2) use ($user) {
+                      $q2->where('users.user_id', $user->user_id);
+                  });
+            });
+        }
+
+        $assignments = $query;
 
         return DataTables::of($assignments)
             ->addIndexColumn()
@@ -105,8 +128,7 @@ class AssignmentController extends Controller
 
         Assignment::create($data);
 
-        return redirect()
-            ->route('admin.assignments.index')
+        return redirect()->back()
             ->with('success','Tugas berhasil ditambahkan');
     }
 
@@ -144,8 +166,7 @@ class AssignmentController extends Controller
 
         $assignment->update($data);
 
-        return redirect()
-            ->route('admin.assignments.index')
+        return redirect()->back()
             ->with('success','Tugas berhasil diperbarui');
     }
 
@@ -162,8 +183,7 @@ class AssignmentController extends Controller
     {
         $assignment->delete();
 
-        return redirect()
-            ->route('admin.assignments.index')
+        return redirect()->back()
             ->with('success','Tugas berhasil dihapus');
     }
 }

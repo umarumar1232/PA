@@ -43,12 +43,6 @@
         </a>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-        </div>
-    @endif
-
     <div style="display: flex; gap: 24px; flex-wrap: wrap;">
         {{-- Sisi Kiri: Deskripsi Tugas --}}
         <div style="flex: 1; min-width: 60%;">

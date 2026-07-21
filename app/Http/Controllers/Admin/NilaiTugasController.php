@@ -97,8 +97,30 @@ class NilaiTugasController extends Controller
     }
     public function rekap()
     {
-        $mahasiswa = \App\Models\User::where('role', 'mahasiswa')->get();
-        $assignments = \App\Models\Assignment::all();
+        $user = \Illuminate\Support\Facades\Auth::user();
+        
+        $mahasiswaQuery = \App\Models\User::where('role', 'mahasiswa');
+        $assignmentQuery = \App\Models\Assignment::query();
+
+        if ($user && $user->role === 'dosen') {
+            $mataKuliahIds = \App\Models\MataKuliah::whereHas('teachers', function($q) use ($user) {
+                $q->where('users.user_id', $user->user_id);
+            })->pluck('id');
+            
+            $mahasiswaQuery->whereHas('enrolledClasses', function($q) use ($mataKuliahIds) {
+                $q->whereIn('mata_kuliah.id', $mataKuliahIds);
+            });
+
+            $assignmentQuery->whereHas('material', function($q) use ($user) {
+                $q->where('created_by', $user->user_id)
+                  ->orWhereHas('mataKuliah.teachers', function($q2) use ($user) {
+                      $q2->where('users.user_id', $user->user_id);
+                  });
+            });
+        }
+
+        $mahasiswa = $mahasiswaQuery->get();
+        $assignments = $assignmentQuery->get();
 
         $submissions = \App\Models\Submission::all()
                         ->groupBy('user_id');
