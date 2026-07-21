@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::table('materials', function (Blueprint $table) {
             if (!Schema::hasColumn('materials', 'created_by')) {
-                $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+                $table->foreignId('created_by')->nullable()->constrained('users', 'user_id')->nullOnDelete();
             }
         });
         
         Schema::table('assignments', function (Blueprint $table) {
             if (!Schema::hasColumn('assignments', 'created_by')) {
-                $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+                $table->foreignId('created_by')->nullable()->constrained('users', 'user_id')->nullOnDelete();
             }
         });
     }
