@@ -151,7 +151,7 @@ class MataKuliahController extends Controller
         
         $isTeacher = $this->checkEnrollment($mataKuliah);
 
-        $material   = \App\Models\Material::with(['category', 'assignments.submissions'])->findOrFail($id);
+        $material   = \App\Models\Material::with(['category', 'assignments.submissions', 'comments.user'])->findOrFail($id);
 
         $user       = Auth::user();
 
@@ -169,7 +169,7 @@ class MataKuliahController extends Controller
 
         $isTeacher = $this->checkEnrollment($mataKuliah);
 
-        $tugas      = Assignment::with(['material.category', 'submissions'])->findOrFail($id);
+        $tugas      = Assignment::with(['material.category', 'submissions', 'comments.user'])->findOrFail($id);
 
         $user       = Auth::user();
 
@@ -195,8 +195,13 @@ class MataKuliahController extends Controller
             $user = Auth::user();
             $sub = Submission::where('assignment_id', $id)->where('user_id', $user->user_id)->first();
             if ($sub) {
-                // Hapus file fisik jika ada
-                if ($sub->file && \Illuminate\Support\Facades\Storage::disk('public')->exists($sub->file)) {
+                if (is_array($sub->file)) {
+                    foreach ($sub->file as $fileObj) {
+                        if (isset($fileObj['path']) && \Illuminate\Support\Facades\Storage::disk('public')->exists($fileObj['path'])) {
+                            \Illuminate\Support\Facades\Storage::disk('public')->delete($fileObj['path']);
+                        }
+                    }
+                } elseif ($sub->file && \Illuminate\Support\Facades\Storage::disk('public')->exists($sub->file)) {
                     \Illuminate\Support\Facades\Storage::disk('public')->delete($sub->file);
                 }
                 $sub->delete();
@@ -205,27 +210,53 @@ class MataKuliahController extends Controller
         }
 
         $request->validate([
-            'file' => 'nullable|file|mimes:pdf,doc,docx,zip,ipynb,py|max:20480',
             'link' => 'nullable|url',
         ]);
 
         if (!$request->hasFile('file') && !$request->filled('link')) {
-            return redirect()->back()->with('error', 'Harap unggah file atau masukkan link Colab.');
+            return redirect()->back()->with('error', 'Harap unggah file atau masukkan link.');
         }
 
         $user = Auth::user();
-        $path = null;
+        $filesData = [];
         if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('submissions', 'public');
+            foreach ($request->file('file') as $file) {
+                $path = $file->store('submissions', 'public');
+                $filesData[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'path' => $path
+                ];
+            }
         }
 
         Submission::updateOrCreate(
             ['assignment_id' => $id, 'user_id' => $user->user_id],
-            ['file' => $path, 'link' => $request->input('link'), 'submitted_at' => now()]
+            ['file' => count($filesData) > 0 ? $filesData : null, 'link' => $request->input('link'), 'submitted_at' => now()]
         );
 
         return redirect()->route('mahasiswa.kelas.tugas.show', [$kelasId, $id])
             ->with('success', 'Tugas berhasil dikumpulkan!');
+    }
+
+    public function storeComment(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'body' => 'required|string',
+            'type' => 'required|in:material,assignment',
+            'id' => 'required|integer',
+        ]);
+
+        $user = Auth::user();
+        $type = $request->type;
+        $modelClass = $type === 'material' ? \App\Models\Material::class : \App\Models\Assignment::class;
+        $model = $modelClass::findOrFail($request->id);
+
+        $model->comments()->create([
+            'user_id' => $user->user_id,
+            'body' => $request->body,
+        ]);
+
+        return redirect()->back()->with('success', 'Komentar berhasil ditambahkan.');
     }
 
     /**

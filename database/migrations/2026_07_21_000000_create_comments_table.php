@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('assignments', function (Blueprint $table) {
-            $table->string('type')->default('assignment')->after('material_id');
+        Schema::create('comments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
+            $table->morphs('commentable');
+            $table->text('body');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('assignments', function (Blueprint $table) {
-            $table->dropColumn('type');
-        });
+        Schema::dropIfExists('comments');
     }
 };

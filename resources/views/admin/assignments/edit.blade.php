@@ -34,13 +34,19 @@
 </div>
 
 <div class="mb-3">
-<label>Link Notebook</label>
-<input type="text" name="notebook_url" value="{{ $assignment->notebook_url }}" class="form-control">
-</div>
-
-<div class="mb-3">
-<label>File Baru</label>
-<input type="file" name="file" class="form-control">
+<label>Upload File Tambahan/Baru</label>
+@if($assignment->file && is_array($assignment->file))
+    <div class="mb-2">
+        <small class="text-muted">File saat ini:</small><br>
+        @foreach($assignment->file as $f)
+        <a href="{{ asset('storage/'.$f['path']) }}" target="_blank" class="text-decoration-none me-2">
+            <i class="fas fa-file"></i> {{ $f['name'] ?? basename($f['path']) }}
+        </a><br>
+        @endforeach
+    </div>
+@endif
+<input type="file" name="file[]" multiple class="form-control">
+<small class="text-muted">Mengupload file baru akan menambahkannya ke daftar file yang ada.</small>
 </div>
 
 <div class="mb-3">

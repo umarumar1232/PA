@@ -63,11 +63,7 @@
                     <div style="font-size: 13px; opacity: 0.9; margin-top: 4px;">
                         {{ $mk->kode_mk }} &bull; Semester {{ $mk->semester }}
                     </div>
-                    <!-- Avatar inisial -->
-                    <div style="position: absolute; right: 16px; bottom: -28px; width: 56px; height: 56px; border-radius: 50%; background: white; color: {{ $c['bg'] }}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 1;">
-                        {{ $inisial }}
                     </div>
-                </div>
                 <div class="gc-card-body" style="padding: 40px 16px 8px 16px; min-height: 80px;">
                     <p class="text-muted small mb-0">
                         {{ $mk->materials->count() }} pertemuan tersedia

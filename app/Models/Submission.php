@@ -18,6 +18,7 @@ class Submission extends Model
 
     protected $casts = [
         'submitted_at' => 'datetime',
+        'file' => 'array',
     ];
     public function assignment()
     {

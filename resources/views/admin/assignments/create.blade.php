@@ -30,13 +30,9 @@
 </div>
 
 <div class="mb-3">
-<label>Link Notebook</label>
-<input type="text" name="notebook_url" class="form-control">
-</div>
-
-<div class="mb-3">
-<label>File</label>
-<input type="file" name="file" class="form-control">
+<label>File Lampiran</label>
+<input type="file" name="file[]" multiple class="form-control">
+<small class="text-muted">Bisa memilih lebih dari satu file.</small>
 </div>
 
 <div class="mb-3">

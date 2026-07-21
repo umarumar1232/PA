@@ -115,14 +115,21 @@ class DashboardController extends Controller
             'type' => 'nullable|string|in:assignment,quiz',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'notebook_url' => 'nullable|url',
-            'file' => 'nullable|file',
             'deadline' => 'nullable|date'
         ]);
 
+        $filesData = [];
         if ($request->hasFile('file')) {
-            $data['file'] = $request->file('file')->store('assignments','public');
+            foreach ($request->file('file') as $file) {
+                $path = $file->store('assignments','public');
+                $filesData[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'path' => $path
+                ];
+            }
         }
+        
+        $data['file'] = count($filesData) > 0 ? $filesData : null;
 
         Assignment::create($data);
 
@@ -157,23 +164,34 @@ class DashboardController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category_id' => 'required|exists:categories,id',
-            'file' => 'nullable|file',
-            'video_url' => 'nullable|url',
+            // category_id optional because we might have new_category
         ]);
 
-        $filePath = null;
+        $categoryId = $request->category_id;
+        if ($request->filled('new_category')) {
+            $category = \App\Models\Category::firstOrCreate(['name' => $request->new_category]);
+            $categoryId = $category->id;
+        }
+
+        $filesData = [];
         if ($request->hasFile('file')) {
-            $filePath = $request->file('file')->store('materials/files', 'public');
+            foreach ($request->file('file') as $file) {
+                $path = $file->store('materials/files', 'public');
+                $filesData[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'path' => $path
+                ];
+            }
         }
 
         Material::create([
             'matakuliah_id' => $id,
             'title' => $request->title,
             'description' => $request->description,
-            'category_id' => $request->category_id,
-            'file' => $filePath,
+            'category_id' => $categoryId,
+            'file' => count($filesData) > 0 ? $filesData : null,
             'video_url' => $request->video_url,
+            'created_by' => auth()->user()->user_id ?? null,
         ]);
 
         return redirect()->back()->with('success', 'Materi berhasil ditambahkan');

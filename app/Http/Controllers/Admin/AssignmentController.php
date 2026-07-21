@@ -40,9 +40,6 @@ class AssignmentController extends Controller
             })
 
             ->addColumn('notebook', function ($data) {
-                if ($data->notebook_url) {
-                    return '<a href="'.$data->notebook_url.'" target="_blank" class="btn btn-info btn-sm">Notebook</a>';
-                }
                 return '-';
             })
 
@@ -90,14 +87,21 @@ class AssignmentController extends Controller
             'material_id' => 'required|exists:materials,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'notebook_url' => 'nullable|url',
-            'file' => 'nullable|file',
             'deadline' => 'nullable|date'
         ]);
 
+        $filesData = [];
         if ($request->hasFile('file')) {
-            $data['file'] = $request->file('file')->store('assignments','public');
+            foreach ($request->file('file') as $file) {
+                $path = $file->store('assignments','public');
+                $filesData[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'path' => $path
+                ];
+            }
         }
+        
+        $data['file'] = count($filesData) > 0 ? $filesData : null;
 
         Assignment::create($data);
 
@@ -121,13 +125,21 @@ class AssignmentController extends Controller
             'material_id' => 'required|exists:materials,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'notebook_url' => 'nullable|url',
-            'file' => 'nullable|file',
             'deadline' => 'nullable|date'
         ]);
 
+        $filesData = is_array($assignment->file) ? $assignment->file : [];
         if ($request->hasFile('file')) {
-            $data['file'] = $request->file('file')->store('assignments','public');
+            foreach ($request->file('file') as $file) {
+                $path = $file->store('assignments','public');
+                $filesData[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'path' => $path
+                ];
+            }
+            $data['file'] = $filesData;
+        } else {
+            $data['file'] = $assignment->file;
         }
 
         $assignment->update($data);

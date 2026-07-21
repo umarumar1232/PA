@@ -654,16 +654,10 @@
               <input type="datetime-local" name="deadline" class="form-control" style="height: 48px; border-radius: 8px;">
           </div>
 
-          <div class="gc-md-input-group mb-2">
-            <input type="url" name="notebook_url" placeholder=" " autocomplete="off">
-            <label>Link Google Drive (Opsional)</label>
-          </div>
-          <small class="form-text text-muted mb-4 px-2" style="margin-top: -8px;">Masukkan *link* Google Drive file (.ipynb). Pastikan aksesnya di-set ke <strong>Viewer (Read-Only)</strong> agar template aman.</small>
-
           <div class="form-group mb-4">
               <label class="text-muted small font-weight-bold mb-1">Lampiran File Tugas (Opsional)</label>
               <div class="custom-file">
-                  <input type="file" name="file" class="custom-file-input" id="assignmentFileInput" onchange="$(this).next('.custom-file-label').html(this.files[0].name)">
+                  <input type="file" name="file[]" multiple class="custom-file-input" id="assignmentFileInput" onchange="$(this).next('.custom-file-label').html(this.files.length > 1 ? this.files.length + ' file terpilih' : this.files[0].name)">
                   <label class="custom-file-label" for="assignmentFileInput" style="border-radius: 8px; line-height: 2.2;">Pilih File...</label>
               </div>
           </div>
@@ -716,19 +710,10 @@
               <input type="datetime-local" name="deadline" class="form-control" style="height: 48px; border-radius: 8px;">
           </div>
 
-          <div class="gc-md-input-group mb-2">
-            <input type="url" name="notebook_url" id="quiz_form_url" placeholder=" " autocomplete="off">
-            <label>Link Google Form / Kuis</label>
-          </div>
-          <div class="mb-4 text-right">
-              <button type="button" class="btn btn-outline-primary btn-sm" id="btnCreateForm" onclick="createBlankForm()">
-                  <i class="fas fa-file-alt mr-1"></i> Buat Blank Quiz (Google Form)
-              </button>
-          </div>
           <div class="form-group mb-4">
               <label class="text-muted small font-weight-bold mb-1">Lampiran File Kuis (Opsional)</label>
               <div class="custom-file">
-                  <input type="file" name="file" class="custom-file-input" id="quizFileInput" onchange="$(this).next('.custom-file-label').html(this.files[0].name)">
+                  <input type="file" name="file[]" multiple class="custom-file-input" id="quizFileInput" onchange="$(this).next('.custom-file-label').html(this.files.length > 1 ? this.files.length + ' file terpilih' : this.files[0].name)">
                   <label class="custom-file-label" for="quizFileInput" style="border-radius: 8px; line-height: 2.2;">Pilih File...</label>
               </div>
           </div>
@@ -828,12 +813,19 @@
         <div class="modal-body gc-modal-body text-left">
           
           <div class="form-group mb-4">
-              <label class="text-muted small font-weight-bold mb-1">Pertemuan / Kategori*</label>
-              <select name="category_id" class="form-control" required style="height: 48px; border-radius: 8px;">
-                  @foreach($categories as $cat)
-                      <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                  @endforeach
-              </select>
+              <label class="text-muted small font-weight-bold mb-1">Pertemuan / Kategori (Pilih atau Ketik Baru)*</label>
+              <div class="input-group">
+                  <select name="category_id" class="form-control" style="height: 48px; border-radius: 8px 0 0 8px;">
+                      <option value="">-- Pilih Kategori --</option>
+                      @foreach($categories as $cat)
+                          <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                      @endforeach
+                  </select>
+                  <div class="input-group-append">
+                      <span class="input-group-text">ATAU</span>
+                  </div>
+                  <input type="text" name="new_category" class="form-control" placeholder="Ketik kategori baru..." style="height: 48px; border-radius: 0 8px 8px 0;">
+              </div>
           </div>
 
           <div class="gc-md-input-group mb-4">
@@ -854,7 +846,7 @@
           <div class="form-group mb-4">
               <label class="text-muted small font-weight-bold mb-1">Lampiran File Materi (Opsional)</label>
               <div class="custom-file">
-                  <input type="file" name="file" class="custom-file-input" id="materialFileInput" onchange="$(this).next('.custom-file-label').html(this.files[0].name)">
+                  <input type="file" name="file[]" multiple class="custom-file-input" id="materialFileInput" onchange="$(this).next('.custom-file-label').html(this.files.length > 1 ? this.files.length + ' file terpilih' : this.files[0].name)">
                   <label class="custom-file-label" for="materialFileInput" style="border-radius: 8px; line-height: 2.2;">Pilih File...</label>
               </div>
           </div>
@@ -882,12 +874,19 @@
         <div class="modal-body gc-modal-body text-left">
           
           <div class="form-group mb-4">
-              <label class="text-muted small font-weight-bold mb-1">Pertemuan / Kategori*</label>
-              <select name="category_id" id="edit_material_category_id" class="form-control" required style="height: 48px; border-radius: 8px;">
-                  @foreach($categories as $cat)
-                      <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                  @endforeach
-              </select>
+              <label class="text-muted small font-weight-bold mb-1">Pertemuan / Kategori (Pilih atau Ketik Baru)*</label>
+              <div class="input-group">
+                  <select name="category_id" id="edit_material_category_id" class="form-control" style="height: 48px; border-radius: 8px 0 0 8px;">
+                      <option value="">-- Pilih Kategori --</option>
+                      @foreach($categories as $cat)
+                          <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                      @endforeach
+                  </select>
+                  <div class="input-group-append">
+                      <span class="input-group-text">ATAU</span>
+                  </div>
+                  <input type="text" name="new_category" class="form-control" placeholder="Ketik kategori baru..." style="height: 48px; border-radius: 0 8px 8px 0;">
+              </div>
           </div>
 
           <div class="gc-md-input-group mb-4">
@@ -906,9 +905,9 @@
           </div>
 
           <div class="form-group mb-4">
-              <label class="text-muted small font-weight-bold mb-1">Ganti File Materi (Opsional, biarkan kosong jika tetap)</label>
+              <label class="text-muted small font-weight-bold mb-1">Upload File Tambahan (Opsional)</label>
               <div class="custom-file">
-                  <input type="file" name="file" class="custom-file-input" id="editMaterialFileInput" onchange="$(this).next('.custom-file-label').html(this.files[0].name)">
+                  <input type="file" name="file[]" multiple class="custom-file-input" id="editMaterialFileInput" onchange="$(this).next('.custom-file-label').html(this.files.length > 1 ? this.files.length + ' file terpilih' : this.files[0].name)">
                   <label class="custom-file-label" for="editMaterialFileInput" style="border-radius: 8px; line-height: 2.2;">Pilih File...</label>
               </div>
           </div>
@@ -959,16 +958,10 @@
               <input type="datetime-local" name="deadline" id="edit_assignment_deadline" class="form-control" style="height: 48px; border-radius: 8px;">
           </div>
 
-          <div class="gc-md-input-group mb-2">
-            <input type="url" name="notebook_url" id="edit_assignment_notebook_url" placeholder=" " autocomplete="off">
-            <label>Link Google Drive (Opsional)</label>
-          </div>
-          <small class="form-text text-muted mb-4 px-2" style="margin-top: -8px;">Masukkan *link* Google Drive file (.ipynb). Pastikan aksesnya di-set ke <strong>Viewer (Read-Only)</strong> agar template aman.</small>
-
           <div class="form-group mb-4">
-              <label class="text-muted small font-weight-bold mb-1">Ganti File Tugas (Opsional, biarkan kosong jika tetap)</label>
+              <label class="text-muted small font-weight-bold mb-1">Upload File Tambahan (Opsional)</label>
               <div class="custom-file">
-                  <input type="file" name="file" class="custom-file-input" id="editAssignmentFileInput" onchange="$(this).next('.custom-file-label').html(this.files[0].name)">
+                  <input type="file" name="file[]" multiple class="custom-file-input" id="editAssignmentFileInput" onchange="$(this).next('.custom-file-label').html(this.files.length > 1 ? this.files.length + ' file terpilih' : this.files[0].name)">
                   <label class="custom-file-label" for="editAssignmentFileInput" style="border-radius: 8px; line-height: 2.2;">Pilih File...</label>
               </div>
           </div>

@@ -111,7 +111,15 @@
                 <div style="font-size:12px;font-weight:600;color:#80868b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;">
                     Lampiran
                 </div>
-                @if($tugas->file)
+                @if($tugas->file && is_array($tugas->file))
+                    @foreach($tugas->file as $f)
+                    <a href="{{ asset('storage/'.$f['path']) }}" target="_blank" class="attachment-chip">
+                        <i class="fas fa-file-alt" style="color:#e53935;font-size:20px;"></i>
+                        <span>{{ $f['name'] ?? basename($f['path']) }}</span>
+                        <i class="fas fa-external-link-alt" style="font-size:11px;color:#9aa0a6;"></i>
+                    </a>
+                    @endforeach
+                @elseif($tugas->file && is_string($tugas->file))
                     <a href="{{ asset('storage/'.$tugas->file) }}" target="_blank" class="attachment-chip">
                         <i class="fas fa-file-alt" style="color:#e53935;font-size:20px;"></i>
                         <span>{{ basename($tugas->file) }}</span>
@@ -137,15 +145,37 @@
                 <img src="{{ Auth::user()->foto ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->nama).'&color=1a73e8&background=e8f0fe' }}"
                      style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-top:2px;" alt="">
                 <div style="flex:1;">
-                    <textarea class="comment-input" rows="1" placeholder="Tambahkan komentar kelas..."></textarea>
-                    <div class="comment-divider"></div>
-                    <div class="d-flex justify-content-end mt-2">
-                        <button class="btn btn-sm" style="color:#1a73e8;font-weight:500;font-size:13px;">
-                            <i class="fas fa-paper-plane mr-1"></i>Kirim
-                        </button>
+                    <form action="{{ route('mahasiswa.comment.store') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="type" value="assignment">
+                        <input type="hidden" name="id" value="{{ $tugas->id }}">
+                        <textarea name="body" class="comment-input" rows="1" placeholder="Tambahkan komentar kelas..." required></textarea>
+                        <div class="comment-divider"></div>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="submit" class="btn btn-sm" style="color:#1a73e8;font-weight:500;font-size:13px; border:none; background:none;">
+                                <i class="fas fa-paper-plane mr-1"></i>Kirim
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {{-- List Comments --}}
+            @foreach($tugas->comments->sortByDesc('created_at') as $comment)
+            <div class="d-flex mb-3" style="gap: 12px;">
+                <img src="{{ $comment->user->foto ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->nama).'&color=1a73e8&background=e8f0fe' }}"
+                     style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="">
+                <div>
+                    <div style="font-size: 13px;">
+                        <strong>{{ $comment->user->nama }}</strong>
+                        <span class="text-muted ml-2">{{ $comment->created_at->diffForHumans() }}</span>
+                    </div>
+                    <div style="font-size: 14px; color: #3c4043; margin-top: 2px;">
+                        {!! nl2br(e($comment->body)) !!}
                     </div>
                 </div>
             </div>
+            @endforeach
         </div>
 
         {{-- Sisi Kanan: Status Pengumpulan & Panel Dosen --}}
@@ -196,14 +226,24 @@
                     @if($isDone)
                         {{-- File yang sudah dikumpulkan --}}
                         <div class="mb-3">
-                            @if($submission->file)
-                            <a href="{{ asset('storage/'.$submission->file) }}" target="_blank" class="attachment-chip w-100 mb-2 justify-content-between">
-                                <div class="d-flex align-items-center gap-2" style="overflow: hidden;">
-                                    <i class="fas fa-file-pdf text-danger" style="font-size:20px;"></i>
-                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ basename($submission->file) }}</span>
-                                </div>
-                                <i class="fas fa-external-link-alt text-muted small"></i>
-                            </a>
+                            @if($submission->file && is_array($submission->file))
+                                @foreach($submission->file as $f)
+                                <a href="{{ asset('storage/'.$f['path']) }}" target="_blank" class="attachment-chip w-100 mb-2 justify-content-between">
+                                    <div class="d-flex align-items-center gap-2" style="overflow: hidden;">
+                                        <i class="fas fa-file-pdf text-danger" style="font-size:20px;"></i>
+                                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $f['name'] ?? basename($f['path']) }}</span>
+                                    </div>
+                                    <i class="fas fa-external-link-alt text-muted small"></i>
+                                </a>
+                                @endforeach
+                            @elseif($submission->file && is_string($submission->file))
+                                <a href="{{ asset('storage/'.$submission->file) }}" target="_blank" class="attachment-chip w-100 mb-2 justify-content-between">
+                                    <div class="d-flex align-items-center gap-2" style="overflow: hidden;">
+                                        <i class="fas fa-file-pdf text-danger" style="font-size:20px;"></i>
+                                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ basename($submission->file) }}</span>
+                                    </div>
+                                    <i class="fas fa-external-link-alt text-muted small"></i>
+                                </a>
                             @endif
                             @if($submission->link)
                             <a href="{{ $submission->link }}" target="_blank" class="attachment-chip w-100 mb-2 justify-content-between" style="background-color: #fff3e0; border-color: #ffe0b2;">
@@ -240,7 +280,7 @@
                         <form action="{{ route('mahasiswa.kelas.tugas.submit', [$mataKuliah->id, $tugas->id]) }}" method="POST" enctype="multipart/form-data" id="submitTugasForm">
                             @csrf
                             <div class="mb-3">
-                                <input type="file" name="file" id="submissionFile" class="d-none" onchange="document.getElementById('fileName').innerText = this.files[0].name; document.getElementById('linkName').innerText = ''; document.getElementById('submissionLink').value = '';">
+                                <input type="file" name="file[]" multiple id="submissionFile" class="d-none" onchange="document.getElementById('fileName').innerText = this.files.length > 1 ? this.files.length + ' file terpilih' : (this.files.length === 1 ? this.files[0].name : ''); document.getElementById('linkName').innerText = ''; document.getElementById('submissionLink').value = '';">
                                 <input type="hidden" name="link" id="submissionLink">
                                 
                                 <button type="button" class="btn btn-outline-primary w-100 mb-2" style="border-radius: 4px; font-weight: 500;" onclick="document.getElementById('submissionFile').click()">

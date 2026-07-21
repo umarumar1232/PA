@@ -23,25 +23,29 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Upload File (PDF, ipynb, dll)</label>
-          <input type="file" name="file" class="form-control">
+          <label class="form-label">Upload File (PDF, Word, dll)</label>
+          <input type="file" name="file[]" multiple class="form-control">
+          <small class="text-muted">Bisa memilih lebih dari satu file.</small>
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Link Video (YouTube / dll)</label>
+          <label class="form-label">URL Video YouTube (Opsional)</label>
           <input type="url" name="video_url" class="form-control" placeholder="https://youtube.com/...">
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Kategori</label>
-            <select name="category_id" class="form-control" required>
+          <label class="form-label">Kategori / Pertemuan (Pilih atau Ketik Baru)</label>
+          <div class="input-group">
+            <select name="category_id" class="form-control">
               <option value="">-- Pilih Kategori --</option>
-                @foreach($categories as $category)
-                  <option value="{{ $category->id }}">
-                  {{ $category->name }}
-                  </option>
-                @endforeach
+              @foreach($categories as $category)
+                <option value="{{ $category->id }}">{{ $category->name }}</option>
+              @endforeach
             </select>
+            <span class="input-group-text">ATAU</span>
+            <input type="text" name="new_category" class="form-control" placeholder="Ketik kategori baru...">
+          </div>
+          <small class="text-muted">Isi input teks jika ingin membuat kategori baru.</small>
         </div>
 
         <button class="btn btn-primary">Simpan</button>

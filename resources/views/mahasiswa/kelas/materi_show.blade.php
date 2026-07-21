@@ -94,7 +94,15 @@
         <div style="font-size:12px;font-weight:600;color:#80868b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;">
             Lampiran
         </div>
-        @if($material->file)
+        @if($material->file && is_array($material->file))
+            @foreach($material->file as $f)
+            <a href="{{ asset('storage/'.$f['path']) }}" target="_blank" class="attachment-chip">
+                <i class="fas fa-file-alt" style="color:#e53935;font-size:20px;"></i>
+                <span>{{ $f['name'] ?? basename($f['path']) }}</span>
+                <i class="fas fa-external-link-alt" style="font-size:11px;color:#9aa0a6;"></i>
+            </a>
+            @endforeach
+        @elseif($material->file && is_string($material->file))
             <a href="{{ asset('storage/'.$material->file) }}" target="_blank" class="attachment-chip">
                 <i class="fas fa-file-alt" style="color:#e53935;font-size:20px;"></i>
                 <span>{{ basename($material->file) }}</span>
@@ -143,19 +151,41 @@
     <div style="font-size:12px;font-weight:600;color:#80868b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;">
         Komentar kelas
     </div>
-    <div class="comment-box d-flex" style="gap:12px;">
+    <div class="comment-box d-flex mb-4" style="gap:12px;">
         <img src="{{ Auth::user()->foto ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->nama).'&color=1a73e8&background=e8f0fe' }}"
              style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-top:2px;" alt="">
         <div style="flex:1;">
-            <textarea class="comment-input" rows="1" placeholder="Tambahkan komentar kelas..."></textarea>
-            <div class="comment-divider"></div>
-            <div class="d-flex justify-content-end mt-2">
-                <button class="btn btn-sm" style="color:#1a73e8;font-weight:500;font-size:13px;">
-                    <i class="fas fa-paper-plane mr-1"></i>Kirim
-                </button>
+            <form action="{{ route('mahasiswa.comment.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="type" value="material">
+                <input type="hidden" name="id" value="{{ $material->id }}">
+                <textarea name="body" class="comment-input" rows="1" placeholder="Tambahkan komentar kelas..." required></textarea>
+                <div class="comment-divider"></div>
+                <div class="d-flex justify-content-end mt-2">
+                    <button type="submit" class="btn btn-sm" style="color:#1a73e8;font-weight:500;font-size:13px; border:none; background:none;">
+                        <i class="fas fa-paper-plane mr-1"></i>Kirim
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {{-- List Comments --}}
+    @foreach($material->comments->sortByDesc('created_at') as $comment)
+    <div class="d-flex mb-3" style="gap: 12px;">
+        <img src="{{ $comment->user->foto ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->nama).'&color=1a73e8&background=e8f0fe' }}"
+             style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="">
+        <div>
+            <div style="font-size: 13px;">
+                <strong>{{ $comment->user->nama }}</strong>
+                <span class="text-muted ml-2">{{ $comment->created_at->diffForHumans() }}</span>
+            </div>
+            <div style="font-size: 14px; color: #3c4043; margin-top: 2px;">
+                {!! nl2br(e($comment->body)) !!}
             </div>
         </div>
     </div>
+    @endforeach
 
 </div>
 @endsection

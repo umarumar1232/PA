@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/mahasiswa/kelas/{kelasId}/materi/{id}', [MataKuliahController::class, 'showMateri'])->name('mahasiswa.kelas.materi.show');
     Route::get('/mahasiswa/kelas/{kelasId}/tugas/{id}', [MataKuliahController::class, 'showTugas'])->name('mahasiswa.kelas.tugas.show');
     Route::post('/mahasiswa/kelas/{kelasId}/tugas/{id}/submit', [MataKuliahController::class, 'submitTugas'])->name('mahasiswa.kelas.tugas.submit');
+    Route::post('/mahasiswa/comment', [MataKuliahController::class, 'storeComment'])->name('mahasiswa.comment.store');
 });
 
 /*

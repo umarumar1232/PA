@@ -20,10 +20,19 @@ class Assignment extends Model
         'file',
         'deadline',
     ];
+
+    protected $casts = [
+        'file' => 'array',
+    ];
     // Relasi ke Material
     public function material()
     {
         return $this->belongsTo(\App\Models\Material::class);
+    }
+
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
     }
     // Relasi ke Submission
     public function submissions()

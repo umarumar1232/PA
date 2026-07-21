@@ -17,7 +17,12 @@ class Material extends Model
         'file',
         'video_url',
         'category_id',
-        'matakuliah_id'
+        'matakuliah_id',
+        'created_by'
+    ];
+
+    protected $casts = [
+        'file' => 'array',
     ];
     public function creator()
     {
@@ -33,6 +38,11 @@ class Material extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable');
     }
 
     public function mataKuliah()
