@@ -63,6 +63,9 @@ class AssignmentController extends Controller
             })
 
             ->addColumn('notebook', function ($data) {
+                if ($data->notebook_url) {
+                    return '<a href="'.$data->notebook_url.'" target="_blank" class="btn btn-sm btn-outline-info">Buka Link</a>';
+                }
                 return '-';
             })
 
@@ -110,7 +113,8 @@ class AssignmentController extends Controller
             'material_id' => 'required|exists:materials,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'deadline' => 'nullable|date'
+            'deadline' => 'nullable|date',
+            'notebook_url' => 'nullable|url'
         ]);
 
         $filesData = [];
@@ -147,7 +151,8 @@ class AssignmentController extends Controller
             'material_id' => 'required|exists:materials,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'deadline' => 'nullable|date'
+            'deadline' => 'nullable|date',
+            'notebook_url' => 'nullable|url'
         ]);
 
         $filesData = is_array($assignment->file) ? $assignment->file : [];

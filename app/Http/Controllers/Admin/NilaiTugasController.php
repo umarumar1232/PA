@@ -108,7 +108,7 @@ class NilaiTugasController extends Controller
             })->pluck('id');
             
             $mahasiswaQuery->whereHas('enrolledClasses', function($q) use ($mataKuliahIds) {
-                $q->whereIn('mata_kuliah.id', $mataKuliahIds);
+                $q->whereIn('mata_kuliahs.id', $mataKuliahIds);
             });
 
             $assignmentQuery->whereHas('material', function($q) use ($user) {

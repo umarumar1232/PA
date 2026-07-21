@@ -115,7 +115,8 @@ class DashboardController extends Controller
             'type' => 'nullable|string|in:assignment,quiz',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'deadline' => 'nullable|date'
+            'deadline' => 'nullable|date',
+            'notebook_url' => 'nullable|url'
         ]);
 
         $filesData = [];

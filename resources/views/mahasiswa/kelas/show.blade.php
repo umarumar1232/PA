@@ -654,6 +654,11 @@
               <input type="datetime-local" name="deadline" class="form-control" style="height: 48px; border-radius: 8px;">
           </div>
 
+          <div class="gc-md-input-group mb-4">
+            <input type="url" name="notebook_url" id="assignment_notebook_url_input" placeholder=" " autocomplete="off">
+            <label>Link Google Form / Link Eksternal (Opsional)</label>
+          </div>
+
           <div class="form-group mb-4">
               <label class="text-muted small font-weight-bold mb-1">Lampiran File Tugas (Opsional)</label>
               <div class="custom-file">
@@ -708,6 +713,16 @@
           <div class="form-group mb-4">
               <label class="text-muted small font-weight-bold mb-1">Tenggat Waktu (Deadline)</label>
               <input type="datetime-local" name="deadline" class="form-control" style="height: 48px; border-radius: 8px;">
+          </div>
+
+          <div class="gc-md-input-group mb-4">
+            <input type="url" name="notebook_url" id="quiz_form_url" placeholder=" " autocomplete="off">
+            <label>Link Google Form (Opsional)</label>
+          </div>
+          <div class="mb-4">
+            <button type="button" id="btnCreateForm" onclick="createBlankForm()" class="btn btn-sm btn-outline-primary" style="border-radius: 20px;">
+              <i class="fas fa-file-alt mr-1"></i> Buat Blank Quiz (Google Form)
+            </button>
           </div>
 
           <div class="form-group mb-4">
@@ -956,6 +971,11 @@
           <div class="form-group mb-4">
               <label class="text-muted small font-weight-bold mb-1">Tenggat Waktu (Deadline)</label>
               <input type="datetime-local" name="deadline" id="edit_assignment_deadline" class="form-control" style="height: 48px; border-radius: 8px;">
+          </div>
+
+          <div class="gc-md-input-group mb-4">
+            <input type="url" name="notebook_url" id="edit_assignment_notebook_url" placeholder=" " autocomplete="off">
+            <label>Link Google Form / Link Eksternal (Opsional)</label>
           </div>
 
           <div class="form-group mb-4">
